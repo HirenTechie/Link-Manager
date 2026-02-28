@@ -8,25 +8,65 @@
 
 ---
 
-## ✨ Features
+## 🏎️ App Architecture & Flow
+
+To understand how Link Manager works, here is the high-level user journey and data flow:
+
+```mermaid
+graph TD
+    A[Launch App] --> B{Splash Screen}
+    B -->|2s Delay| C[Home Dashboard]
+    
+    subgraph "Core Navigation (HomeView)"
+        C --> D[Home Tab: Latest Links]
+        C --> E[Groups Tab: Folders]
+        C --> F[Favorites Tab: Highlighted]
+    end
+
+    subgraph "Adding Content"
+        G[Safari / External App] -->|iOS Share Sheet| H[Share Extension]
+        H -->|App Group Persist| I[Core Data Store]
+        D -->|FAB + Button| J[Add Link Modal]
+        J -->|Manual Entry| I
+    end
+
+    subgraph "Link Interaction (LinkCardView)"
+        D -->|Single Tap| K[Link Detail View]
+        D -->|Heart Click| L[Toggle Favorite]
+        D -->|Action Swipe| M[Share/Delete/Group]
+        D -->|Long Press| N[Selection Mode]
+    end
+
+    subgraph "Deep Management"
+        K -->|Safari Icon| O[Open in Browser]
+        K -->|Pencil Icon| P[Edit Metadata]
+        E -->|Folder Tap| Q[Group Detail View]
+        N -->|Multi-Select| R[Batch Delete/Bulk Group]
+    end
+
+    I -->|@FetchRequest| D
+    I -->|@FetchRequest| E
+    I -->|@FetchRequest| F
+```
+
+---
+
+## ✨ Features Breakdown
 
 ### 🗂️ Smart Organization & Groups
-- **Custom Collections**: Create and manage folders (Groups) for specialized interests.
-- **Dynamic Grid Layouts**: Visually browse your collections with responsive designs.
-- **Batch Operations**: Move or delete multiple links at once using the intuitive Selection Mode.
+- **The Flow**: From the **Groups Tab**, tap any folder to enter a specialized view. Use the **Selection Mode** (Checkmark icon) on the Home dashboard to select multiple links and "File" them into these groups instantly.
+- **Dynamic Grid Layouts**: Visually browse your collections with responsive designs that adapt to your device orientation.
 
 ### 🌐 Intelligent Metadata Retrieval
-- **LPMetadataProvider Integration**: Automatically fetches high-resolution thumbnails, titles, and site descriptions.
-- **Smart Categorization**: The app extracts the primary domain to suggest categories automatically.
-- **Favicon Extraction**: Uses Google's favicon API and native providers to ensure every link looks distinct.
+- **The Flow**: Simply paste a URL in the **Add Link Modal** or use the **Share Extension**. Our `MetadataService` immediately triggers an asynchronous fetch to pull the title, description, and high-res icon, ensuring your library stays beautiful without manual typing.
+- **Favicon Extraction**: Uses Google's favicon API and native providers to ensure every link looks distinct from the moment it's added.
 
 ### ❤️ Favorites & Quick Actions
-- **Instant Favoriting**: Heart links with a single tap from the card or detail view.
-- **Dedicated Hub**: A clean space for your most accessed content.
-- **Native Sharing**: Share any saved link through the iOS system sheet with one tap.
+- **The Flow**: See a link you love? Click the **Heart Icon** on any card. It instantly appears in the synchronized **Favorites Tab**. 
+- **Native Sharing**: Every component (Card or Detail) features a one-tap **Share Button** to export your links back to the world.
 
 ### 🚀 Seamless Share Extension
-Save links from Safari, YouTube, or Twitter without opening the app. Our extension handles background persistence and metadata queuing.
+- **The Flow**: You don't even need to open Link Manager. While browsing in Safari, hit **Share** -> **Link Manager**. The extension captures the URL and saves it to the **Core Data App Group**, making it available the next time you open the main app.
 
 ---
 
@@ -44,10 +84,6 @@ Save links from Safari, YouTube, or Twitter without opening the app. Our extensi
 - **`MetadataService.swift`**: A specialized service leveraging Apple's `LinkPresentation` framework for robust enrichment.
 - **`Persistence.swift`**: Manages the `NSPersistentCloudKitContainer`. Crucially utilizes **App Groups** to sync data between the main app and the Share Extension.
 
-### 🎨 Animations & Shared Components
-- **`LottieView.swift`**: Integrates Airbnb's Lottie for stunning vector animations (Success, Loading).
-- **`AnimationManager.swift`**: Centralizes visual feedback logic for consistent UX across the app.
-
 ---
 
 ## 🛠️ Technical Specifications
@@ -64,7 +100,7 @@ Save links from Safari, YouTube, or Twitter without opening the app. Our extensi
 
 1.  **Clone the Repo**:
     ```bash
-    git clone https://github.com/yourusername/link-manager.git
+    git clone https://github.com/HirenTechie/Link-Manager.git
     ```
 2.  **Open in Xcode**: Open `Link Manager.xcodeproj`.
 3.  **App Groups Setup**: Ensure your App Group ID matches in `Persistence.swift` to enable Share Extension sync.
