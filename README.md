@@ -28,34 +28,35 @@ Link Manager utilizes a **Local-First** approach. Data is stored in a shared SQL
 ```mermaid
 graph TD
     %% Entry Points
-    Start[User Discovers Link] --> Safari[Safari/3rd Party App]
-    Start --> Manual[Manual Entry in App]
+    Start["User Discovers Link"] --> Safari["Safari/3rd Party App"]
+    Start --> Manual["Manual Entry in App"]
 
     %% Input Methods
-    Safari -->|iOS Share Sheet| Ext[Share Extension]
-    Manual -->|AddLinkView| Logic[LinkViewModel]
+    Safari -->|"iOS Share Sheet"| Ext["Share Extension"]
+    Manual -->|"AddLinkView"| Logic["LinkViewModel"]
 
     %% Extension Logic
-    Ext -->|URL Detection| Check{Single or Multi?}
-    Check -->|Single| SaveExt[Instant Save]
-    Check -->|Multi| SelectUI[Selection Sheet]
+    Ext -->|"URL Detection"| Check{"Single or Multi?"}
+    Check -->|"Single"| SaveExt["Instant Save"]
+    Check -->|"Multi"| SelectUI["Selection Sheet"]
     SelectUI --> SaveExt
 
     %% Persistence
-    SaveExt -->|App Group Store| DB[(Shared SQLite)]
-    Logic -->|Add Link| DB
+    SaveExt -->|"App Group Store"| Store[("Shared SQLite")]
+    Logic -->|"Add Link"| Store
 
     %% App Logic
-    DB -->|@FetchRequest| Home[Home Dashboard]
-    Home -->|On Appearance| Refresh[Metadata Service]
-    Refresh -->|LPMetadataProvider| Web[Fetch Title/Icons]
-    Web -->|Async Update| DB
+    Store -->|"@FetchRequest"| Home["Home Dashboard"]
+    Home -->|"On Appearance"| Refresh["Metadata Service"]
+    Refresh -->|"LPMetadataProvider"| Web["Fetch Title/Icons"]
+    Web -->|"Async Update"| Store
 
     %% Interactions
-    Home -->|Tap Link| Detail[Immersive Detail View]
-    Home -->|Swipe/Long Press| Batch[Selection Mode]
-    Batch -->|Bulk Action| Organise[Move to Group/Delete]
+    Home -->|"Tap Link"| Detail["Immersive Detail View"]
+    Home -->|"Swipe/Long Press"| Batch["Selection Mode"]
+    Batch -->|"Bulk Action"| Organise["Move to Group/Delete"]
 ```
+
 
 ---
 
