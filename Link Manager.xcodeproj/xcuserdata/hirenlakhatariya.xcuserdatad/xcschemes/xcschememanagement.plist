@@ -7,7 +7,25 @@
 		<key>Link Manager.xcscheme_^#shared#^_</key>
 		<dict>
 			<key>orderHint</key>
+			<integer>1</integer>
+		</dict>
+		<key>ShareExtension.xcscheme_^#shared#^_</key>
+		<dict>
+			<key>orderHint</key>
 			<integer>0</integer>
+		</dict>
+	</dict>
+	<key>SuppressBuildableAutocreation</key>
+	<dict>
+		<key>9A3220172F10802F00BC49E5</key>
+		<dict>
+			<key>primary</key>
+			<true/>
+		</dict>
+		<key>9A32202A2F10808E00BC49E5</key>
+		<dict>
+			<key>primary</key>
+			<true/>
 		</dict>
 	</dict>
 </dict>

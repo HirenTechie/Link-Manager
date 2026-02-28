@@ -6,14 +6,84 @@
 	objectVersion = 77;
 	objects = {
 
+/* Begin PBXBuildFile section */
+		9A3220352F10808E00BC49E5 /* ShareExtension.appex in Embed Foundation Extensions */ = {isa = PBXBuildFile; fileRef = 9A32202B2F10808E00BC49E5 /* ShareExtension.appex */; settings = {ATTRIBUTES = (RemoveHeadersOnCopy, ); }; };
+		9AAC9ABB2F1A07870035B1E9 /* Lottie in Frameworks */ = {isa = PBXBuildFile; productRef = 9AAC9ABA2F1A07870035B1E9 /* Lottie */; };
+		9AAC9AC02F1A09460035B1E9 /* Lottie in Frameworks */ = {isa = PBXBuildFile; productRef = 9AAC9ABF2F1A09460035B1E9 /* Lottie */; };
+		9AB0EEDF2F2FA77F00DCAE81 /* Kingfisher in Frameworks */ = {isa = PBXBuildFile; productRef = 9AB0EEDE2F2FA77F00DCAE81 /* Kingfisher */; };
+/* End PBXBuildFile section */
+
+/* Begin PBXContainerItemProxy section */
+		9A3220332F10808E00BC49E5 /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = 9A3220102F10802F00BC49E5 /* Project object */;
+			proxyType = 1;
+			remoteGlobalIDString = 9A32202A2F10808E00BC49E5;
+			remoteInfo = ShareExtension;
+		};
+/* End PBXContainerItemProxy section */
+
+/* Begin PBXCopyFilesBuildPhase section */
+		9A32203A2F10808E00BC49E5 /* Embed Foundation Extensions */ = {
+			isa = PBXCopyFilesBuildPhase;
+			buildActionMask = 2147483647;
+			dstPath = "";
+			dstSubfolderSpec = 13;
+			files = (
+				9A3220352F10808E00BC49E5 /* ShareExtension.appex in Embed Foundation Extensions */,
+			);
+			name = "Embed Foundation Extensions";
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXCopyFilesBuildPhase section */
+
 /* Begin PBXFileReference section */
 		9A3220182F10802F00BC49E5 /* Link Manager.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = "Link Manager.app"; sourceTree = BUILT_PRODUCTS_DIR; };
+		9A32202B2F10808E00BC49E5 /* ShareExtension.appex */ = {isa = PBXFileReference; explicitFileType = "wrapper.app-extension"; includeInIndex = 0; path = ShareExtension.appex; sourceTree = BUILT_PRODUCTS_DIR; };
 /* End PBXFileReference section */
+
+/* Begin PBXFileSystemSynchronizedBuildFileExceptionSet section */
+		9A3220362F10808E00BC49E5 /* Exceptions for "ShareExtension" folder in "ShareExtension" target */ = {
+			isa = PBXFileSystemSynchronizedBuildFileExceptionSet;
+			membershipExceptions = (
+				Info.plist,
+			);
+			target = 9A32202A2F10808E00BC49E5 /* ShareExtension */;
+		};
+		9A3220492F10815700BC49E5 /* Exceptions for "Link Manager" folder in "ShareExtension" target */ = {
+			isa = PBXFileSystemSynchronizedBuildFileExceptionSet;
+			membershipExceptions = (
+				"Core data/LinkManager.xcdatamodel",
+				Lotties/fail.json,
+				Lotties/success.json,
+				Shared/AnimationManager.swift,
+				"Shared/Category+CoreDataClass.swift",
+				"Shared/Content+CoreDataClass.swift",
+				"Shared/LinkGroup+CoreDataClass.swift",
+				Shared/LinkSelectionView.swift,
+				Shared/LottieView.swift,
+				Shared/MetadataService.swift,
+				Shared/Persistence.swift,
+			);
+			target = 9A32202A2F10808E00BC49E5 /* ShareExtension */;
+		};
+/* End PBXFileSystemSynchronizedBuildFileExceptionSet section */
 
 /* Begin PBXFileSystemSynchronizedRootGroup section */
 		9A32201A2F10802F00BC49E5 /* Link Manager */ = {
 			isa = PBXFileSystemSynchronizedRootGroup;
+			exceptions = (
+				9A3220492F10815700BC49E5 /* Exceptions for "Link Manager" folder in "ShareExtension" target */,
+			);
 			path = "Link Manager";
+			sourceTree = "<group>";
+		};
+		9A32202C2F10808E00BC49E5 /* ShareExtension */ = {
+			isa = PBXFileSystemSynchronizedRootGroup;
+			exceptions = (
+				9A3220362F10808E00BC49E5 /* Exceptions for "ShareExtension" folder in "ShareExtension" target */,
+			);
+			path = ShareExtension;
 			sourceTree = "<group>";
 		};
 /* End PBXFileSystemSynchronizedRootGroup section */
@@ -23,6 +93,16 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				9AB0EEDF2F2FA77F00DCAE81 /* Kingfisher in Frameworks */,
+				9AAC9ABB2F1A07870035B1E9 /* Lottie in Frameworks */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		9A3220282F10808E00BC49E5 /* Frameworks */ = {
+			isa = PBXFrameworksBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				9AAC9AC02F1A09460035B1E9 /* Lottie in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -33,6 +113,8 @@
 			isa = PBXGroup;
 			children = (
 				9A32201A2F10802F00BC49E5 /* Link Manager */,
+				9A32202C2F10808E00BC49E5 /* ShareExtension */,
+				9AAC9ABE2F1A09460035B1E9 /* Frameworks */,
 				9A3220192F10802F00BC49E5 /* Products */,
 			);
 			sourceTree = "<group>";
@@ -41,8 +123,16 @@
 			isa = PBXGroup;
 			children = (
 				9A3220182F10802F00BC49E5 /* Link Manager.app */,
+				9A32202B2F10808E00BC49E5 /* ShareExtension.appex */,
 			);
 			name = Products;
+			sourceTree = "<group>";
+		};
+		9AAC9ABE2F1A09460035B1E9 /* Frameworks */ = {
+			isa = PBXGroup;
+			children = (
+			);
+			name = Frameworks;
 			sourceTree = "<group>";
 		};
 /* End PBXGroup section */
@@ -55,20 +145,47 @@
 				9A3220142F10802F00BC49E5 /* Sources */,
 				9A3220152F10802F00BC49E5 /* Frameworks */,
 				9A3220162F10802F00BC49E5 /* Resources */,
+				9A32203A2F10808E00BC49E5 /* Embed Foundation Extensions */,
 			);
 			buildRules = (
 			);
 			dependencies = (
+				9A3220342F10808E00BC49E5 /* PBXTargetDependency */,
 			);
 			fileSystemSynchronizedGroups = (
 				9A32201A2F10802F00BC49E5 /* Link Manager */,
 			);
 			name = "Link Manager";
 			packageProductDependencies = (
+				9AAC9ABA2F1A07870035B1E9 /* Lottie */,
+				9AB0EEDE2F2FA77F00DCAE81 /* Kingfisher */,
 			);
 			productName = "Link Manager";
 			productReference = 9A3220182F10802F00BC49E5 /* Link Manager.app */;
 			productType = "com.apple.product-type.application";
+		};
+		9A32202A2F10808E00BC49E5 /* ShareExtension */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = 9A3220372F10808E00BC49E5 /* Build configuration list for PBXNativeTarget "ShareExtension" */;
+			buildPhases = (
+				9A3220272F10808E00BC49E5 /* Sources */,
+				9A3220282F10808E00BC49E5 /* Frameworks */,
+				9A3220292F10808E00BC49E5 /* Resources */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+			);
+			fileSystemSynchronizedGroups = (
+				9A32202C2F10808E00BC49E5 /* ShareExtension */,
+			);
+			name = ShareExtension;
+			packageProductDependencies = (
+				9AAC9ABF2F1A09460035B1E9 /* Lottie */,
+			);
+			productName = ShareExtension;
+			productReference = 9A32202B2F10808E00BC49E5 /* ShareExtension.appex */;
+			productType = "com.apple.product-type.app-extension";
 		};
 /* End PBXNativeTarget section */
 
@@ -83,6 +200,9 @@
 					9A3220172F10802F00BC49E5 = {
 						CreatedOnToolsVersion = 26.2;
 					};
+					9A32202A2F10808E00BC49E5 = {
+						CreatedOnToolsVersion = 26.2;
+					};
 				};
 			};
 			buildConfigurationList = 9A3220132F10802F00BC49E5 /* Build configuration list for PBXProject "Link Manager" */;
@@ -94,18 +214,30 @@
 			);
 			mainGroup = 9A32200F2F10802F00BC49E5;
 			minimizedProjectReferenceProxies = 1;
+			packageReferences = (
+				9AAC9AB92F1A07870035B1E9 /* XCRemoteSwiftPackageReference "lottie-ios" */,
+				9AB0EEDD2F2FA77F00DCAE81 /* XCRemoteSwiftPackageReference "Kingfisher" */,
+			);
 			preferredProjectObjectVersion = 77;
 			productRefGroup = 9A3220192F10802F00BC49E5 /* Products */;
 			projectDirPath = "";
 			projectRoot = "";
 			targets = (
 				9A3220172F10802F00BC49E5 /* Link Manager */,
+				9A32202A2F10808E00BC49E5 /* ShareExtension */,
 			);
 		};
 /* End PBXProject section */
 
 /* Begin PBXResourcesBuildPhase section */
 		9A3220162F10802F00BC49E5 /* Resources */ = {
+			isa = PBXResourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		9A3220292F10808E00BC49E5 /* Resources */ = {
 			isa = PBXResourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
@@ -122,7 +254,22 @@
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
+		9A3220272F10808E00BC49E5 /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
 /* End PBXSourcesBuildPhase section */
+
+/* Begin PBXTargetDependency section */
+		9A3220342F10808E00BC49E5 /* PBXTargetDependency */ = {
+			isa = PBXTargetDependency;
+			target = 9A32202A2F10808E00BC49E5 /* ShareExtension */;
+			targetProxy = 9A3220332F10808E00BC49E5 /* PBXContainerItemProxy */;
+		};
+/* End PBXTargetDependency section */
 
 /* Begin XCBuildConfiguration section */
 		9A3220212F10803100BC49E5 /* Debug */ = {
@@ -251,6 +398,7 @@
 			buildSettings = {
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
+				CODE_SIGN_ENTITLEMENTS = "Link Manager/Link Manager.entitlements";
 				CODE_SIGN_STYLE = Automatic;
 				CURRENT_PROJECT_VERSION = 1;
 				DEVELOPMENT_TEAM = 2BSGF4F3MA;
@@ -266,7 +414,7 @@
 					"@executable_path/Frameworks",
 				);
 				MARKETING_VERSION = 1.0;
-				PRODUCT_BUNDLE_IDENTIFIER = "com.hiren.Link-Manager";
+				PRODUCT_BUNDLE_IDENTIFIER = com.hiren.LinkManager;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				STRING_CATALOG_GENERATE_SYMBOLS = YES;
 				SWIFT_APPROACHABLE_CONCURRENCY = YES;
@@ -283,6 +431,7 @@
 			buildSettings = {
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
+				CODE_SIGN_ENTITLEMENTS = "Link Manager/Link Manager.entitlements";
 				CODE_SIGN_STYLE = Automatic;
 				CURRENT_PROJECT_VERSION = 1;
 				DEVELOPMENT_TEAM = 2BSGF4F3MA;
@@ -298,11 +447,77 @@
 					"@executable_path/Frameworks",
 				);
 				MARKETING_VERSION = 1.0;
-				PRODUCT_BUNDLE_IDENTIFIER = "com.hiren.Link-Manager";
+				PRODUCT_BUNDLE_IDENTIFIER = com.hiren.LinkManager;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				STRING_CATALOG_GENERATE_SYMBOLS = YES;
 				SWIFT_APPROACHABLE_CONCURRENCY = YES;
 				SWIFT_DEFAULT_ACTOR_ISOLATION = MainActor;
+				SWIFT_EMIT_LOC_STRINGS = YES;
+				SWIFT_UPCOMING_FEATURE_MEMBER_IMPORT_VISIBILITY = YES;
+				SWIFT_VERSION = 5.0;
+				TARGETED_DEVICE_FAMILY = "1,2";
+			};
+			name = Release;
+		};
+		9A3220382F10808E00BC49E5 /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				CODE_SIGN_ENTITLEMENTS = ShareExtension/ShareExtension.entitlements;
+				CODE_SIGN_STYLE = Automatic;
+				CURRENT_PROJECT_VERSION = 1;
+				DEVELOPMENT_TEAM = 2BSGF4F3MA;
+				GENERATE_INFOPLIST_FILE = YES;
+				INFOPLIST_FILE = ShareExtension/Info.plist;
+				INFOPLIST_KEY_CFBundleDisplayName = ShareExtension;
+				INFOPLIST_KEY_NSHumanReadableCopyright = "";
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/Frameworks",
+					"@executable_path/../../Frameworks",
+				);
+				MARKETING_VERSION = 1.0;
+				PRODUCT_BUNDLE_IDENTIFIER = com.hiren.LinkManager.ShareExtension;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SKIP_INSTALL = YES;
+				STRING_CATALOG_GENERATE_SYMBOLS = YES;
+				SUPPORTED_PLATFORMS = "iphoneos iphonesimulator";
+				SUPPORTS_MACCATALYST = NO;
+				SUPPORTS_MAC_DESIGNED_FOR_IPHONE_IPAD = NO;
+				SUPPORTS_XR_DESIGNED_FOR_IPHONE_IPAD = NO;
+				SWIFT_APPROACHABLE_CONCURRENCY = YES;
+				SWIFT_EMIT_LOC_STRINGS = YES;
+				SWIFT_UPCOMING_FEATURE_MEMBER_IMPORT_VISIBILITY = YES;
+				SWIFT_VERSION = 5.0;
+				TARGETED_DEVICE_FAMILY = "1,2";
+			};
+			name = Debug;
+		};
+		9A3220392F10808E00BC49E5 /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				CODE_SIGN_ENTITLEMENTS = ShareExtension/ShareExtension.entitlements;
+				CODE_SIGN_STYLE = Automatic;
+				CURRENT_PROJECT_VERSION = 1;
+				DEVELOPMENT_TEAM = 2BSGF4F3MA;
+				GENERATE_INFOPLIST_FILE = YES;
+				INFOPLIST_FILE = ShareExtension/Info.plist;
+				INFOPLIST_KEY_CFBundleDisplayName = ShareExtension;
+				INFOPLIST_KEY_NSHumanReadableCopyright = "";
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/Frameworks",
+					"@executable_path/../../Frameworks",
+				);
+				MARKETING_VERSION = 1.0;
+				PRODUCT_BUNDLE_IDENTIFIER = com.hiren.LinkManager.ShareExtension;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SKIP_INSTALL = YES;
+				STRING_CATALOG_GENERATE_SYMBOLS = YES;
+				SUPPORTED_PLATFORMS = "iphoneos iphonesimulator";
+				SUPPORTS_MACCATALYST = NO;
+				SUPPORTS_MAC_DESIGNED_FOR_IPHONE_IPAD = NO;
+				SUPPORTS_XR_DESIGNED_FOR_IPHONE_IPAD = NO;
+				SWIFT_APPROACHABLE_CONCURRENCY = YES;
 				SWIFT_EMIT_LOC_STRINGS = YES;
 				SWIFT_UPCOMING_FEATURE_MEMBER_IMPORT_VISIBILITY = YES;
 				SWIFT_VERSION = 5.0;
@@ -331,7 +546,53 @@
 			defaultConfigurationIsVisible = 0;
 			defaultConfigurationName = Release;
 		};
+		9A3220372F10808E00BC49E5 /* Build configuration list for PBXNativeTarget "ShareExtension" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				9A3220382F10808E00BC49E5 /* Debug */,
+				9A3220392F10808E00BC49E5 /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
 /* End XCConfigurationList section */
+
+/* Begin XCRemoteSwiftPackageReference section */
+		9AAC9AB92F1A07870035B1E9 /* XCRemoteSwiftPackageReference "lottie-ios" */ = {
+			isa = XCRemoteSwiftPackageReference;
+			repositoryURL = "https://github.com/airbnb/lottie-ios";
+			requirement = {
+				kind = upToNextMajorVersion;
+				minimumVersion = 4.6.0;
+			};
+		};
+		9AB0EEDD2F2FA77F00DCAE81 /* XCRemoteSwiftPackageReference "Kingfisher" */ = {
+			isa = XCRemoteSwiftPackageReference;
+			repositoryURL = "https://github.com/onevcat/Kingfisher";
+			requirement = {
+				kind = upToNextMajorVersion;
+				minimumVersion = 8.6.2;
+			};
+		};
+/* End XCRemoteSwiftPackageReference section */
+
+/* Begin XCSwiftPackageProductDependency section */
+		9AAC9ABA2F1A07870035B1E9 /* Lottie */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = 9AAC9AB92F1A07870035B1E9 /* XCRemoteSwiftPackageReference "lottie-ios" */;
+			productName = Lottie;
+		};
+		9AAC9ABF2F1A09460035B1E9 /* Lottie */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = 9AAC9AB92F1A07870035B1E9 /* XCRemoteSwiftPackageReference "lottie-ios" */;
+			productName = Lottie;
+		};
+		9AB0EEDE2F2FA77F00DCAE81 /* Kingfisher */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = 9AB0EEDD2F2FA77F00DCAE81 /* XCRemoteSwiftPackageReference "Kingfisher" */;
+			productName = Kingfisher;
+		};
+/* End XCSwiftPackageProductDependency section */
 	};
 	rootObject = 9A3220102F10802F00BC49E5 /* Project object */;
 }

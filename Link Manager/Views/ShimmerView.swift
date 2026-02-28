@@ -5,7 +5,7 @@ struct Shimmer: ViewModifier {
     var duration = 1.5
     var bounce = false
 
-    func body(content: Content) -> some View {
+    func body(content: Self.Content) -> some View {
         content
             .overlay(
                 GeometryReader { geo in
@@ -21,7 +21,7 @@ struct Shimmer: ViewModifier {
                 }
             )
             .onAppear {
-                withAnimation(Animation.linear(duration: duration).repeatForever(autoreverses: bounce)) {
+                withAnimation(Animation.linear(duration: duration).repeatForever(autoreverses: false)) {
                     phase = 1
                 }
             }

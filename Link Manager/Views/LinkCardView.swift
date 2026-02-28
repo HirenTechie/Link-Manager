@@ -1,95 +1,173 @@
+import CoreData
+import Kingfisher
 import SwiftUI
+import UIKit
 
 struct LinkCardView: View {
-    let content: Content
-    let onDelete: () -> Void
-    let onShare: () -> Void
-    
+    @ObservedObject var content: Content
+    var onToggleFavorite: () -> Void
+    var onAddToGroup: () -> Void
+    var onDelete: () -> Void
+    var onShare: () -> Void
+    var onTap: (() -> Void)? = nil  // Added onTap closure
+    var isSelectionMode: Bool
+    var isSelected: Bool
+    var deleteIconName: String = "trash"
+    var showAddToGroupButton: Bool = true
+
     var body: some View {
-        HStack(spacing: 12) {
-            // Thumbnail
-            AsyncImage(url: URL(string: content.thumbIconUrl ?? "")) { phase in
-                switch phase {
-                case .empty:
-                    ZStack {
-                        Color.gray.opacity(0.1)
-                        if content.thumbIconUrl == nil {
-                            Image(systemName: "photo")
-                                .foregroundColor(.gray)
+        VStack(spacing: 0) {
+            // Top Content Wrapper
+            Button(action: { onTap?() }) {
+                HStack(alignment: .top, spacing: 14) {
+                    // Selection Circle
+                    if isSelectionMode {
+                        Image(systemName: isSelected ? "checkmark.circle.fill" : "circle")
+                            .foregroundColor(isSelected ? .blue : .gray)
+                            .font(.title2)
+                            .transition(.scale)
+                            .padding(.top, 10)
+                    }
+
+                    // Thumbnail
+                    Group {
+                        if let thumbUrl = content.thumbIconUrl, let url = URL(string: thumbUrl) {
+                            KFImage(url)
+                                .resizable()
+                                .placeholder {
+                                    ZStack {
+                                        Color(UIColor.secondarySystemBackground)
+                                        initialPlaceholder
+                                    }
+                                }
+                                .fade(duration: 0.25)
+                                .aspectRatio(contentMode: .fill)
                         } else {
-                            Color.gray.opacity(0.2).shimmer()
+                            initialPlaceholder
                         }
                     }
-                case .success(let image):
-                    image.resizable()
-                        .aspectRatio(contentMode: .fill)
-                case .failure:
-                    ZStack {
-                        Color.gray.opacity(0.1)
-                        Image(systemName: "photo")
-                            .foregroundColor(.gray)
+                    .frame(width: 60, height: 60)
+                    .clipShape(RoundedRectangle(cornerRadius: 12, style: .continuous))
+                    .overlay(
+                        RoundedRectangle(cornerRadius: 12, style: .continuous)
+                            .stroke(Color.primary.opacity(0.05), lineWidth: 1)
+                    )
+
+                    // Text Content
+                    VStack(alignment: .leading, spacing: 6) {
+                        HStack(alignment: .top) {
+                            Text(content.title ?? "Unknown Title")
+                                .font(.system(.headline, design: .rounded))
+                                .fontWeight(.semibold)
+                                .foregroundColor(.primary)
+                                .lineLimit(2)
+                                .fixedSize(horizontal: false, vertical: true)
+
+                            Spacer()
+
+                            if let date = content.creationDate {
+                                Text(date.formatted(date: .numeric, time: .omitted))
+                                    .font(.caption2)
+                                    .foregroundColor(Color(uiColor: .tertiaryLabel))
+                            }
+                        }
+
+                        if let url = content.savedLinkUrl {
+                            Text(url)
+                                .font(.caption)
+                                .foregroundColor(.secondary)
+                                .lineLimit(1)
+                        }
+
+                        if let category = content.category?.name {
+                            Text(category.uppercased())
+                                .font(.system(size: 10, weight: .bold))
+                                .padding(.horizontal, 8)
+                                .padding(.vertical, 4)
+                                .background(Color.blue.opacity(0.1))
+                                .foregroundColor(.blue)
+                                .clipShape(Capsule())
+                        }
                     }
-                @unknown default:
-                    EmptyView()
                 }
+                .padding(16)  // Padding for the top section
+                .contentShape(Rectangle())  // Ensure the whole area is tappable
             }
-            .frame(width: 80, height: 80)
-            .cornerRadius(12)
-            .clipped()
-            
-            // Details
-            VStack(alignment: .leading, spacing: 4) {
-                if let title = content.title, !title.isEmpty {
-                    Text(title)
-                        .font(.headline)
-                        .lineLimit(2)
-                        .foregroundColor(.primary)
-                } else {
-                    // Shimmer placeholder if loading/fetching
-                    RoundedRectangle(cornerRadius: 4)
-                        .fill(Color.gray.opacity(0.2))
-                        .frame(height: 16)
-                        .shimmer()
+            .buttonStyle(PlainButtonStyle())
+
+            if !isSelectionMode {
+                Divider()
+
+                // Smart Action Bar (Clean)
+                HStack(spacing: 0) {
+                    // Favorite Button
+                    Button(action: onToggleFavorite) {
+                        Image(systemName: content.isFavorite ? "heart.fill" : "heart")
+                            .font(.system(size: 20, weight: .medium))
+                            .foregroundColor(content.isFavorite ? .red : .secondary)
+                            .padding(.horizontal, 20)
+                            .padding(.vertical, 12)
+                            .contentShape(Rectangle())
+                    }
+                    .buttonStyle(PlainButtonStyle())
+
+                    Spacer()
+
+                    // Share Button
+                    Button(action: onShare) {
+                        Image(systemName: "square.and.arrow.up")
+                            .font(.system(size: 19, weight: .medium))
+                            .foregroundColor(.blue)
+                            .padding(.horizontal, 20)
+                            .padding(.vertical, 12)
+                            .contentShape(Rectangle())
+                    }
+                    .buttonStyle(PlainButtonStyle())
+
+                    Spacer()
+
+                    // Add to Group Button
+                    if showAddToGroupButton {
+                        Button(action: onAddToGroup) {
+                            Image(systemName: "folder.badge.plus")
+                                .font(.system(size: 19, weight: .medium))
+                                .foregroundColor(.blue)
+                                .padding(.horizontal, 20)
+                                .padding(.vertical, 12)
+                                .contentShape(Rectangle())
+                        }
+                        .buttonStyle(PlainButtonStyle())
+
+                        Spacer()
+                    }
+
+                    // Delete Button
+                    Button(action: onDelete) {
+                        Image(systemName: deleteIconName)
+                            .font(.system(size: 19, weight: .medium))
+                            .foregroundColor(.gray)
+                            .padding(.horizontal, 20)
+                            .padding(.vertical, 12)
+                            .contentShape(Rectangle())
+                    }
+                    .buttonStyle(PlainButtonStyle())
                 }
-                
-                if let subtitle = content.subtitle, !subtitle.isEmpty {
-                    Text(subtitle)
-                        .font(.subheadline)
-                        .foregroundColor(.secondary)
-                        .lineLimit(1)
-                }
-                
-                if let urlString = content.savedLinkUrl {
-                    Text(urlString)
-                        .font(.caption)
-                        .foregroundColor(.blue)
-                        .lineLimit(1)
-                }
+                .padding(.horizontal, 4)
+                .background(Color.clear)
             }
-            
-            Spacer()
         }
-        .padding(12)
-        .background(Color(.systemBackground))
-        .cornerRadius(16)
-        .shadow(color: Color.black.opacity(0.05), radius: 5, x: 0, y: 2)
-        .contextMenu {
-            Button(action: onShare) {
-                Label("Share", systemImage: "square.and.arrow.up")
-            }
-            
-            Button(role: .destructive, action: onDelete) {
-                Label("Delete", systemImage: "trash")
-            }
-        }
-        .swipeActions(edge: .trailing, allowsFullSwipe: true) {
-            Button(role: .destructive, action: onDelete) {
-                Label("Delete", systemImage: "trash")
-            }
-            Button(action: onShare) {
-                Label("Share", systemImage: "square.and.arrow.up")
-            }
-            .tint(.blue)
+        .background(Color(uiColor: .secondarySystemGroupedBackground))
+        .clipShape(RoundedRectangle(cornerRadius: 16, style: .continuous))
+        .shadow(color: Color.black.opacity(0.08), radius: 5, x: 0, y: 2)
+    }
+
+    private var initialPlaceholder: some View {
+        ZStack {
+            Color.gray.opacity(0.1)
+            Text(String(content.title?.prefix(1) ?? "#"))
+                .font(.title)
+                .fontWeight(.bold)
+                .foregroundColor(.primary)
         }
     }
 }

@@ -1,5 +1,5 @@
-import Foundation
 import CoreData
+import Foundation
 
 @objc(Content)
 public class Content: NSManagedObject {
@@ -22,9 +22,27 @@ extension Content {
     @NSManaged public var isFavorite: Bool
     @NSManaged public var creationDate: Date?
     @NSManaged public var category: Category?
+    @NSManaged public var groups: NSSet?
 
 }
 
-extension Content : Identifiable {
+// MARK: Generated accessors for groups
+extension Content {
+
+    @objc(addGroupsObject:)
+    @NSManaged public func addToGroups(_ value: LinkGroup)
+
+    @objc(removeGroupsObject:)
+    @NSManaged public func removeFromGroups(_ value: LinkGroup)
+
+    @objc(addGroups:)
+    @NSManaged public func addToGroups(_ values: NSSet)
+
+    @objc(removeGroups:)
+    @NSManaged public func removeFromGroups(_ values: NSSet)
+
+}
+
+extension Content: Identifiable {
 
 }
