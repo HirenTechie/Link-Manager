@@ -1,0 +1,266 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Link Manager - The Premium iOS Suite</title>
+    <style>
+        :root {
+            --primary: #5856D6;
+            --secondary: #007AFF;
+            --accent: #5AC8FA;
+            --bg: #0A0A0C;
+            --card-bg: rgba(255, 255, 255, 0.03);
+            --text: #FFFFFF;
+            --text-dim: rgba(255, 255, 255, 0.6);
+            --border: rgba(255, 255, 255, 0.08);
+        }
+
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;700&family=Outfit:wght@400;700&display=swap');
+
+        body {
+            margin: 0;
+            padding: 0;
+            font-family: 'Inter', sans-serif;
+            background: var(--bg);
+            color: var(--text);
+            overflow-x: hidden;
+            line-height: 1.6;
+        }
+
+        h1,
+        h2,
+        h3 {
+            font-family: 'Outfit', sans-serif;
+        }
+
+        .gradient-bg {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: radial-gradient(circle at 80% 20%, #1A1A40 0%, #0A0A0C 100%);
+            z-index: -1;
+        }
+
+        .container {
+            max-width: 1100px;
+            margin: 0 auto;
+            padding: 40px 20px;
+        }
+
+        header {
+            text-align: center;
+            padding: 120px 0 80px;
+        }
+
+        .hero-badge {
+            background: rgba(88, 86, 214, 0.15);
+            color: var(--primary);
+            padding: 6px 16px;
+            border-radius: 100px;
+            font-size: 0.8rem;
+            font-weight: 600;
+            letter-spacing: 1px;
+            display: inline-block;
+            margin-bottom: 24px;
+            border: 1px solid rgba(88, 86, 214, 0.3);
+        }
+
+        .hero-title {
+            font-size: clamp(3rem, 8vw, 5rem);
+            font-weight: 700;
+            margin: 0;
+            letter-spacing: -2px;
+            background: linear-gradient(180deg, #FFF 0%, #AAA 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+
+        .hero-tagline {
+            font-size: 1.4rem;
+            color: var(--text-dim);
+            margin-top: 24px;
+            max-width: 600px;
+            margin-left: auto;
+            margin-right: auto;
+        }
+
+        .features-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
+            gap: 24px;
+            margin-top: 100px;
+        }
+
+        .feature-card {
+            background: var(--card-bg);
+            border: 1px solid var(--border);
+            border-radius: 28px;
+            padding: 40px;
+            backdrop-filter: blur(20px);
+            transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+        }
+
+        .feature-card:hover {
+            transform: translateY(-12px);
+            border-color: var(--primary);
+            background: rgba(255, 255, 255, 0.05);
+        }
+
+        .feature-icon {
+            font-size: 3rem;
+            margin-bottom: 24px;
+            display: block;
+        }
+
+        .feature-card h3 {
+            margin: 0 0 16px 0;
+            font-size: 1.6rem;
+        }
+
+        .feature-card p {
+            color: var(--text-dim);
+            margin: 0;
+            font-size: 1rem;
+        }
+
+        .tech-section {
+            margin-top: 150px;
+            padding: 80px;
+            background: rgba(255, 255, 255, 0.02);
+            border-radius: 40px;
+            border: 1px solid var(--border);
+        }
+
+        .tech-grid {
+            display: grid;
+            grid-template-columns: 1fr 1.5fr;
+            gap: 60px;
+            align-items: center;
+        }
+
+        .tech-list {
+            list-style: none;
+            padding: 0;
+        }
+
+        .tech-item {
+            margin-bottom: 30px;
+            padding-left: 24px;
+            border-left: 2px solid var(--primary);
+        }
+
+        .tech-item h4 {
+            margin: 0 0 8px 0;
+            color: #FFF;
+        }
+
+        .tech-item p {
+            margin: 0;
+            color: var(--text-dim);
+            font-size: 0.9rem;
+        }
+
+        footer {
+            text-align: center;
+            padding: 120px 0 60px;
+            border-top: 1px solid var(--border);
+            margin-top: 100px;
+            color: var(--text-dim);
+        }
+
+        .btn {
+            display: inline-block;
+            padding: 18px 36px;
+            background: var(--primary);
+            color: white;
+            text-decoration: none;
+            border-radius: 14px;
+            font-weight: 600;
+            margin-top: 40px;
+            transition: all 0.3s ease;
+            box-shadow: 0 20px 40px rgba(88, 86, 214, 0.2);
+        }
+
+        .btn:hover {
+            transform: scale(1.05);
+            background: #6A68E0;
+        }
+
+        @media (max-width: 800px) {
+            .tech-grid {
+                grid-template-columns: 1fr;
+            }
+
+            .tech-section {
+                padding: 40px;
+            }
+        }
+    </style>
+</head>
+
+<body>
+    <div class="gradient-bg"></div>
+
+    <div class="container">
+        <header>
+            <div class="hero-badge">BUILT FOR IOS 18+</div>
+            <h1 class="hero-title">Link Manager</h1>
+            <p class="hero-tagline">Experience the ultimate organization tool. Smart metadata, deep search, and premium
+                SwiftUI motion design.</p>
+            <a href="#" class="btn">View Source Code</a>
+        </header>
+
+        <section class="features-grid">
+            <div class="feature-card">
+                <span class="feature-icon">💎</span>
+                <h3>Premium UI</h3>
+                <p>Blurred immersions, tactile haptics, and smooth Lottie vector animations for every action.</p>
+            </div>
+            <div class="feature-card">
+                <span class="feature-icon">🤖</span>
+                <h3>Auto-Metadata</h3>
+                <p>Never type a title again. Our service fetches rich previews and icons instantly using Apple's latest
+                    APIs.</p>
+            </div>
+            <div class="feature-card">
+                <span class="feature-icon">📁</span>
+                <h3>Smart Groups</h3>
+                <p>Group-based grid organization with batch actions. Organize thousands of links in seconds.</p>
+            </div>
+        </section>
+
+        <section class="tech-section">
+            <div class="tech-grid">
+                <div>
+                    <h2 style="font-size: 2.5rem; margin-bottom: 24px;">Under the Hood</h2>
+                    <p style="color: var(--text-dim);">A deep dive into the engineering that powers Link Manager.</p>
+                </div>
+                <div class="tech-list">
+                    <div class="tech-item">
+                        <h4>Core Data & App Groups</h4>
+                        <p>Shared persistence layer allows the Share Extension and Main App to share a real-time
+                            database.</p>
+                    </div>
+                    <div class="tech-item">
+                        <h4>MVVM Architecture</h4>
+                        <p>Clean separation of concerns ensuring testability and high UI performance.</p>
+                    </div>
+                    <div class="tech-item">
+                        <h4>Asynchronous Metadata</h4>
+                        <p>Background processing via Swift Concurrency ensures zero UI lag during link enrichment.</p>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <footer>
+            <p>&copy; 2026 Swasitk Creative. Optimized for Performance.</p>
+        </footer>
+    </div>
+</body>
+
+</html>
