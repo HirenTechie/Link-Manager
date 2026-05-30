@@ -608,7 +608,7 @@ struct HomeContentView: View {
                     .font(.caption2)
                     .fontWeight(.bold)
             }
-            .foregroundStyle(disabled ? .tertiary : tint)
+            .foregroundStyle(tint.opacity(disabled ? 0.3 : 1.0))
             .frame(maxWidth: .infinity)
             .frame(height: 52)
         }
