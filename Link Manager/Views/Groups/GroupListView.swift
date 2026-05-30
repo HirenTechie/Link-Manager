@@ -63,93 +63,143 @@ struct GroupListView: View {
             ZStack {
                 Color(uiColor: .systemGroupedBackground).ignoresSafeArea()
 
-                VStack(spacing: 0) {
-                    headerView
-                        .padding(.horizontal)
-                        .padding(.top, 16)
-                        .padding(.bottom, 10)
-
-                    searchBar
-                        .padding(.horizontal)
-                        .padding(.bottom, 16)
-
-                    ScrollView {
-                        LazyVGrid(columns: columns, spacing: 20) {
-                            ForEach(filteredGroups) { group in
-                                Group {
-                                    if isSelectionMode {
-                                        Button {
-                                            if selectedGroupIDs.contains(group.objectID) {
-                                                selectedGroupIDs.remove(group.objectID)
-                                            } else {
-                                                selectedGroupIDs.insert(group.objectID)
-                                            }
-                                        } label: {
-                                            GroupGridItemView(
-                                                group: group,
-                                                isSelected: selectedGroupIDs.contains(group.objectID),
-                                                isSelectionMode: true,
-                                                viewModel: groupViewModel
-                                            )
+                ScrollView {
+                    LazyVGrid(columns: columns, spacing: 20) {
+                        ForEach(filteredGroups) { group in
+                            Group {
+                                if isSelectionMode {
+                                    Button {
+                                        if selectedGroupIDs.contains(group.objectID) {
+                                            selectedGroupIDs.remove(group.objectID)
+                                        } else {
+                                            selectedGroupIDs.insert(group.objectID)
                                         }
-                                        .buttonStyle(PlainButtonStyle())
-                                    } else {
-                                        NavigationLink(value: group) {
-                                            GroupGridItemView(
-                                                group: group,
-                                                isSelected: false,
-                                                isSelectionMode: false,
-                                                viewModel: groupViewModel
-                                            )
-                                        }
-                                        .buttonStyle(PlainButtonStyle())
+                                    } label: {
+                                        GroupGridItemView(
+                                            group: group,
+                                            isSelected: selectedGroupIDs.contains(group.objectID),
+                                            isSelectionMode: true,
+                                            viewModel: groupViewModel
+                                        )
                                     }
+                                    .buttonStyle(PlainButtonStyle())
+                                } else {
+                                    NavigationLink(value: group) {
+                                        GroupGridItemView(
+                                            group: group,
+                                            isSelected: false,
+                                            isSelectionMode: false,
+                                            viewModel: groupViewModel
+                                        )
+                                    }
+                                    .buttonStyle(PlainButtonStyle())
                                 }
-                                .contextMenu {
-                                    if !isSelectionMode {
-                                        Button(role: .destructive) {
-                                            withAnimation {
-                                                groupViewModel.deleteGroup(group)
-                                            }
-                                        } label: {
-                                            Label("Delete Group", systemImage: "trash")
-                                        }
-
-                                        Button {
-                                            newGroupName = group.name ?? ""
-                                            showingAddGroupAlert = true
-                                        } label: {
-                                            Label("Rename", systemImage: "pencil")
-                                        }
+                            }
+                            .contextMenu {
+                                if !isSelectionMode {
+                                    Button(role: .destructive) {
+                                        withAnimation { groupViewModel.deleteGroup(group) }
+                                    } label: {
+                                        Label("Delete Group", systemImage: "trash")
+                                    }
+                                    Button {
+                                        newGroupName = group.name ?? ""
+                                        showingAddGroupAlert = true
+                                    } label: {
+                                        Label("Rename", systemImage: "pencil")
                                     }
                                 }
                             }
                         }
-                        .padding()
-                        .padding(.bottom, isSelectionMode ? 80 : 20)
                     }
+                    .padding()
+                    .padding(.bottom, 20)
                 }
 
-                if groupViewModel.groups.isEmpty {
-                    emptyState
-                }
-
-                // Bottom Toolbar
-                if isSelectionMode {
-                    selectionToolbar
-                }
+                if groupViewModel.groups.isEmpty { emptyState }
             }
             .navigationDestination(for: LinkGroup.self) { group in
                 GroupDetailView(group: group, groupViewModel: groupViewModel, linkViewModel: linkViewModel)
             }
-            .toolbar(.hidden, for: .navigationBar)
-        .onChange(of: appState.showAddGroupAlert) { show in
-            if show {
-                newGroupName = ""
-                showingAddGroupAlert = true
-                appState.showAddGroupAlert = false
+            .navigationTitle("Groups")
+            .navigationBarTitleDisplayMode(.large)
+            .searchable(text: $searchText, prompt: "Search Groups")
+            .toolbar {
+                if isSelectionMode {
+                    ToolbarItem(placement: .navigationBarTrailing) {
+                        Button {
+                            withAnimation(.easeInOut(duration: 0.2)) {
+                                isSelectionMode = false
+                                selectedGroupIDs.removeAll()
+                            }
+                        } label: {
+                            Image(systemName: "xmark")
+                                .font(.system(size: 16, weight: .bold))
+                                .foregroundStyle(.primary)
+                        }
+                    }
+                    ToolbarItemGroup(placement: .bottomBar) {
+                        let allSelected = !filteredGroups.isEmpty && selectedGroupIDs.count == filteredGroups.count
+                        Button { deleteSelectedGroups() } label: {
+                            Text("Delete")
+                                .font(.system(size: 15, weight: .semibold))
+                                .foregroundStyle(selectedGroupIDs.isEmpty ? Color.secondary : .red)
+                                .padding(.horizontal, 10)
+                                .padding(.vertical, 10)
+                        }
+                        .disabled(selectedGroupIDs.isEmpty)
+                        Spacer()
+                        Button {
+                            let allIDs = Set(filteredGroups.map { $0.objectID })
+                            withAnimation { selectedGroupIDs = allSelected ? [] : allIDs }
+                        } label: {
+                            Text(allSelected ? "None" : "All")
+                                .font(.system(size: 15, weight: .semibold))
+                                .foregroundStyle(allSelected ? Color.blue : Color.primary)
+                                .padding(.horizontal, 10)
+                                .padding(.vertical, 10)
+                        }
+                    }
+                } else {
+                    ToolbarItemGroup(placement: .topBarTrailing) {
+                        if !groupViewModel.groups.isEmpty {
+                            Button {
+                                withAnimation(.easeInOut(duration: 0.2)) { isSelectionMode.toggle() }
+                            } label: {
+                                Image(systemName: "checklist")
+                                    .font(.system(size: 16, weight: .semibold))
+                                    .foregroundStyle(.primary)
+                            }
+                        }
+                        Menu {
+                            Picker("Sort By", selection: $sortOption) {
+                                Label("Date", systemImage: "calendar").tag(SortOption.date)
+                                Label("Name", systemImage: "textformat").tag(SortOption.title)
+                                Label("Count", systemImage: "number").tag(SortOption.count)
+                            }
+                            Divider()
+                            Button { isAscendingOrder.toggle() } label: {
+                                Label(
+                                    isAscendingOrder ? "Oldest First" : "Newest First",
+                                    systemImage: isAscendingOrder ? "arrow.up" : "arrow.down")
+                            }
+                        } label: {
+                            Image(systemName: "arrow.up.arrow.down")
+                                .font(.system(size: 16, weight: .semibold))
+                                .foregroundStyle(.primary)
+                        }
+                    }
+                }
             }
-        }
+            .toolbar(isSelectionMode ? .hidden : .visible, for: .tabBar)
+            .navigationBarBackButtonHidden(isSelectionMode)
+            .onChange(of: appState.showAddGroupAlert) { show in
+                if show {
+                    newGroupName = ""
+                    showingAddGroupAlert = true
+                    appState.showAddGroupAlert = false
+                }
+            }
         }
         .alert("New Group", isPresented: $showingAddGroupAlert) {
             TextField("Group Name", text: $newGroupName)
@@ -169,79 +219,6 @@ struct GroupListView: View {
             }
         } message: {
             Text("Enter a name for your new group.")
-        }
-    }
-
-    // MARK: - Header
-    var headerView: some View {
-        VStack(spacing: 16) {
-            HStack(alignment: .center) {
-                VStack(alignment: .leading, spacing: 4) {
-                    Text("Groups")
-                        .font(.system(.largeTitle, design: .default))
-                        .fontWeight(.bold)
-                        .foregroundStyle(.primary)
-
-                    Text("Your collections")
-                        .font(.subheadline)
-                        .foregroundStyle(.secondary)
-                }
-
-                Spacer()
-
-                HStack(spacing: 12) {
-                    // Edit/Select Button
-                    if !groupViewModel.groups.isEmpty {
-                        Button(action: {
-                            withAnimation(.easeInOut(duration: 0.2)) {
-                                isSelectionMode.toggle()
-                                if !isSelectionMode { selectedGroupIDs.removeAll() }
-                            }
-                        }) {
-                            Image(
-                                systemName: isSelectionMode ? "checkmark.circle.fill" : "checklist"
-                            )
-                            .font(.system(size: 16, weight: .semibold))
-                            .foregroundStyle(isSelectionMode ? .white : .primary)
-                            .frame(width: 36, height: 36)
-                            .background(
-                                isSelectionMode ? Color.blue : Color(UIColor.tertiarySystemFill)
-                            )
-                            .clipShape(Circle())
-                        }
-                    }
-
-                    // Sort Button
-                    sortMenu
-                }
-            }
-        }
-    }
-
-    var sortMenu: some View {
-        Menu {
-            Picker("Sort By", selection: $sortOption) {
-                Label("Date", systemImage: "calendar").tag(SortOption.date)
-                Label("Name", systemImage: "textformat").tag(SortOption.title)
-                Label("Count", systemImage: "number").tag(SortOption.count)
-            }
-
-            Divider()
-
-            Button {
-                isAscendingOrder.toggle()
-            } label: {
-                Label(
-                    isAscendingOrder ? "Oldest First" : "Newest First",
-                    systemImage: isAscendingOrder ? "arrow.up" : "arrow.down")
-            }
-        } label: {
-            Image(systemName: "arrow.up.arrow.down")
-                .font(.system(size: 16, weight: .semibold))
-                .foregroundStyle(.primary)
-                .frame(width: 36, height: 36)
-                .background(Color(UIColor.tertiarySystemFill))
-                .clipShape(Circle())
         }
     }
 
@@ -286,123 +263,5 @@ struct GroupListView: View {
         }
     }
 
-    @ViewBuilder
-    private var searchBar: some View {
-        HStack(spacing: 8) {
-            Image(systemName: "magnifyingglass")
-                .foregroundColor(.secondary)
-                .font(.system(size: 16, weight: .semibold))
-
-            TextField("Search Groups", text: $searchText)
-                .font(.system(size: 16))
-
-            if !searchText.isEmpty {
-                Button(action: {
-                    withAnimation {
-                        searchText = ""
-                        UIApplication.shared.sendAction(
-                            #selector(UIResponder.resignFirstResponder), to: nil, from: nil,
-                            for: nil)
-                    }
-                }) {
-                    Image(systemName: "xmark.circle.fill")
-                        .foregroundColor(.secondary)
-                        .font(.system(size: 16))
-                }
-            }
-        }
-        .padding(10)
-        .background(Color(uiColor: .tertiarySystemFill))
-        .cornerRadius(10)
-    }
-
-    // MARK: - Subviews
-
-    @ViewBuilder
-    var fabView: some View {
-        VStack {
-            Spacer()
-            HStack {
-                Spacer()
-                Button(action: {
-                    newGroupName = ""
-                    showingAddGroupAlert = true
-                }) {
-                    Image(systemName: "plus")
-                        .font(.system(size: 24, weight: .bold))
-                        .foregroundColor(.white)
-                        .frame(width: 60, height: 60)
-                        .background(Color.blue)
-                        .clipShape(Circle())
-                        .shadow(color: Color.blue.opacity(0.4), radius: 6, x: 0, y: 4)
-                }
-                .padding(.trailing, 24)
-                .padding(.bottom, 24)
-            }
-        }
-    }
-
-    @ViewBuilder
-    var selectionToolbar: some View {
-        VStack {
-            Spacer()
-            HStack(spacing: 16) {
-                // Delete Button
-                Button(action: {
-                    deleteSelectedGroups()
-                }) {
-                    VStack(spacing: 4) {
-                        Image(systemName: "trash.fill")
-                            .font(.system(size: 20))
-                        Text("Delete")
-                            .font(.caption2)
-                            .fontWeight(.bold)
-                    }
-                    .foregroundColor(.white)
-                    .frame(maxWidth: .infinity)
-                    .frame(height: 56)
-                    .background(
-                        selectedGroupIDs.isEmpty ? Color.gray.opacity(0.3) : Color.red
-                    )
-                    .clipShape(RoundedRectangle(cornerRadius: 16))
-                }
-                .disabled(selectedGroupIDs.isEmpty)
-
-                // Select All Button
-                Button(action: {
-                    let allIDs = Set(filteredGroups.map { $0.objectID })
-                    if selectedGroupIDs.count == allIDs.count {
-                        selectedGroupIDs.removeAll()
-                    } else {
-                        selectedGroupIDs = allIDs
-                    }
-                }) {
-                    VStack(spacing: 4) {
-                        Image(
-                            systemName: selectedGroupIDs.count == filteredGroups.count
-                                ? "checkmark.circle.fill" : "circle"
-                        )
-                        .font(.system(size: 20))
-                        Text(
-                            selectedGroupIDs.count == filteredGroups.count
-                                ? "None" : "All"
-                        )
-                        .font(.caption2)
-                        .fontWeight(.bold)
-                    }
-                    .foregroundColor(.primary)
-                    .frame(maxWidth: .infinity)
-                    .frame(height: 56)
-                    .background(Color(UIColor.tertiarySystemGroupedBackground))
-                    .clipShape(RoundedRectangle(cornerRadius: 16))
-                }
-            }
-            .padding()
-            .background(Color(UIColor.systemGroupedBackground).opacity(0.95))
-            .cornerRadius(24)
-            .padding(.horizontal)
-            .padding(.bottom, 8)
-        }
-        .transition(.move(edge: .bottom))
-    }
 }
+

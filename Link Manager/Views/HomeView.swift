@@ -182,54 +182,113 @@ struct HomeContentView: View {
     }
 
     var body: some View {
-        NavigationView {
+        NavigationStack {
             ZStack {
-                Color(UIColor.systemGroupedBackground).ignoresSafeArea()
-
-                VStack(spacing: 0) {
-                    headerView
-                        .padding(.horizontal)
-                        .padding(.top, 16)
-                        .padding(.bottom, 10)
-
-                    searchBar
-                        .padding(.bottom, 16)
-
-                    categoryListView
-
-                    contentListView
-                }
-
-                bottomToolbarView
-
+                contentListView
                 successOverlay
             }
-            .navigationBarHidden(true)
+            .navigationTitle(showFavoritesOnly ? "Favorites" : "Link Manager")
+            .navigationBarTitleDisplayMode(.large)
+            .searchable(text: $searchText, prompt: "Search")
+            .toolbar {
+                if isSelectionMode {
+                    ToolbarItem(placement: .navigationBarTrailing) {
+                        Button {
+                            withAnimation(.easeInOut(duration: 0.2)) {
+                                isSelectionMode = false
+                                selectedLinkIDs.removeAll()
+                            }
+                        } label: {
+                            Image(systemName: "xmark")
+                                .font(.system(size: 16, weight: .bold))
+                                .foregroundStyle(.primary)
+                        }
+                    }
+                    ToolbarItemGroup(placement: .bottomBar) {
+                        let allIDs = Set(displayedContents.compactMap { $0.id })
+                        let allSelected = !displayedContents.isEmpty && selectedLinkIDs == allIDs
+                        Button {
+                            let toDelete = displayedContents.filter { content in
+                                content.id.map { selectedLinkIDs.contains($0) } ?? false
+                            }
+                            guard !toDelete.isEmpty else { return }
+                            withAnimation {
+                                viewModel.deleteLinks(toDelete)
+                                isSelectionMode = false
+                                selectedLinkIDs.removeAll()
+                            }
+                        } label: {
+                            Text("Delete")
+                                .font(.system(size: 15, weight: .semibold))
+                                .foregroundStyle(selectedLinkIDs.isEmpty ? Color.secondary : .red)
+                                .padding(.horizontal, 10)
+                                .padding(.vertical, 10)
+                        }
+                        .disabled(selectedLinkIDs.isEmpty)
+                        Spacer()
+                        Button { showingAddToGroupSheet = true } label: {
+                            Text("Move")
+                                .font(.system(size: 15, weight: .semibold))
+                                .foregroundStyle(selectedLinkIDs.isEmpty ? Color.secondary : .blue)
+                                .padding(.horizontal, 10)
+                                .padding(.vertical, 10)
+                        }
+                        .disabled(selectedLinkIDs.isEmpty)
+                        Spacer()
+                        Button {
+                            withAnimation { selectedLinkIDs = allSelected ? [] : allIDs }
+                        } label: {
+                            Text(allSelected ? "None" : "All")
+                                .font(.system(size: 15, weight: .semibold))
+                                .foregroundStyle(allSelected ? Color.blue : Color.primary)
+                                .padding(.horizontal, 10)
+                                .padding(.vertical, 10)
+                        }
+                    }
+                } else {
+                    ToolbarItemGroup(placement: .topBarTrailing) {
+                        if !displayedContents.isEmpty {
+                            Button {
+                                withAnimation(.easeInOut(duration: 0.2)) { isSelectionMode = true }
+                            } label: {
+                                Image(systemName: "checklist")
+                                    .font(.system(size: 16, weight: .semibold))
+                                    .foregroundStyle(.primary)
+                            }
+                        }
+                        Menu {
+                            Picker("Sort By", selection: $sortOption) {
+                                Label("Date", systemImage: "calendar").tag(SortOption.date)
+                                Label("Title", systemImage: "textformat").tag(SortOption.title)
+                            }
+                            Divider()
+                            Button { isAscendingOrder.toggle() } label: {
+                                Label(
+                                    isAscendingOrder ? "Oldest First" : "Newest First",
+                                    systemImage: isAscendingOrder ? "arrow.up" : "arrow.down")
+                            }
+                        } label: {
+                            Image(systemName: "arrow.up.arrow.down")
+                                .font(.system(size: 16, weight: .semibold))
+                                .foregroundStyle(.primary)
+                        }
+                    }
+                }
+            }
             .toolbar(isSelectionMode ? .hidden : .visible, for: .tabBar)
+            .onAppear { Task { await viewModel.refresh() } }
+            .onChange(of: scenePhase) { newPhase in
+                if newPhase == .active { Task { await viewModel.refresh() } }
+            }
+            .onChange(of: viewModel.categories) { categories in
+                if let selected = selectedCategory, !categories.contains(selected) {
+                    withAnimation { selectedCategory = nil }
+                }
+            }
             .onChange(of: appState.showAddLinkInHome) { show in
                 if show && !showFavoritesOnly {
                     showingAddLinkSheet = true
                     appState.showAddLinkInHome = false
-                }
-            }
-            .onAppear {
-                Task {
-                    await viewModel.refresh()
-                }
-            }
-            .onChange(of: scenePhase) { newPhase in
-                if newPhase == .active {
-                    Task {
-                        await viewModel.refresh()
-                    }
-                }
-            }
-            .onChange(of: viewModel.categories) { categories in
-                // If selected category no longer exists, switch to All
-                if let selected = selectedCategory, !categories.contains(selected) {
-                    withAnimation {
-                        selectedCategory = nil
-                    }
                 }
             }
             .sheet(item: $selectedContent) { content in
@@ -239,13 +298,9 @@ struct HomeContentView: View {
                 AddLinkView(
                     viewModel: viewModel,
                     onSuccess: {
-                        withAnimation {
-                            showSuccessAnimation = true
-                        }
+                        withAnimation { showSuccessAnimation = true }
                         DispatchQueue.main.asyncAfter(deadline: .now() + 2) {
-                            withAnimation {
-                                showSuccessAnimation = false
-                            }
+                            withAnimation { showSuccessAnimation = false }
                         }
                     })
             }
@@ -267,131 +322,14 @@ struct HomeContentView: View {
             }
             .alert(item: $activeAlert) { alertType in
                 switch alertType {
-                case .deleteAll:
-                    return deleteAllAlert
-                case .deleteSingle(let content):
-                    return deleteSingleAlert(for: content)
+                case .deleteAll: return deleteAllAlert
+                case .deleteSingle(let content): return deleteSingleAlert(for: content)
                 }
             }
         }
     }
 
     // MARK: - Subviews
-
-    @ViewBuilder
-    private var searchBar: some View {
-        HStack(spacing: 8) {
-            Image(systemName: "magnifyingglass")
-                .foregroundColor(.secondary)
-                .font(.system(size: 16, weight: .semibold))
-
-            TextField("Search", text: $searchText)
-                .font(.system(size: 16))
-
-            if !searchText.isEmpty {
-                Button(action: {
-                    withAnimation {
-                        searchText = ""
-                        // Hide keyboard?
-                        UIApplication.shared.sendAction(
-                            #selector(UIResponder.resignFirstResponder), to: nil, from: nil,
-                            for: nil)
-                    }
-                }) {
-                    Image(systemName: "xmark.circle.fill")
-                        .foregroundColor(.secondary)
-                        .font(.system(size: 16))
-                }
-            }
-        }
-        .padding(10)
-        .background(Color(UIColor.tertiarySystemFill))
-        .cornerRadius(10)
-        .padding(.horizontal)
-    }
-
-    @ViewBuilder
-    private var headerView: some View {
-        HStack(alignment: .center) {
-            if isSelectionMode {
-                Text(selectedLinkIDs.isEmpty ? "Select Items" : "\(selectedLinkIDs.count) selected")
-                    .font(.system(.title3, weight: .bold))
-                    .foregroundStyle(.primary)
-                    .animation(.none, value: selectedLinkIDs.count)
-
-                Spacer()
-
-                Button {
-                    withAnimation(.easeInOut(duration: 0.2)) {
-                        isSelectionMode = false
-                        selectedLinkIDs.removeAll()
-                    }
-                } label: {
-                    Image(systemName: "xmark.circle.fill")
-                        .font(.system(size: 28, weight: .semibold))
-                        .foregroundStyle(.secondary)
-                }
-            } else {
-                VStack(alignment: .leading, spacing: 4) {
-                    Text(showFavoritesOnly ? "Favorites" : "Link Manager")
-                        .font(.system(.largeTitle, design: .default, weight: .bold))
-                        .foregroundStyle(.primary)
-
-                    Text(showFavoritesOnly ? "Your saved collection" : "Organize your digital life")
-                        .font(.subheadline)
-                        .foregroundStyle(.secondary)
-                }
-
-                Spacer()
-
-                HStack(spacing: 12) {
-                    if !displayedContents.isEmpty {
-                        Button {
-                            withAnimation(.easeInOut(duration: 0.2)) {
-                                isSelectionMode = true
-                            }
-                        } label: {
-                            Image(systemName: "checklist")
-                                .font(.system(size: 16, weight: .semibold))
-                                .foregroundStyle(.primary)
-                                .frame(width: 36, height: 36)
-                                .background(Color(UIColor.tertiarySystemFill))
-                                .clipShape(Circle())
-                        }
-                    }
-                    sortMenu
-                }
-            }
-        }
-        .animation(.easeInOut(duration: 0.2), value: isSelectionMode)
-    }
-
-    @ViewBuilder
-    private var sortMenu: some View {
-        Menu {
-            Picker("Sort By", selection: $sortOption) {
-                Label("Date", systemImage: "calendar").tag(SortOption.date)
-                Label("Title", systemImage: "textformat").tag(SortOption.title)
-            }
-
-            Divider()
-
-            Button {
-                isAscendingOrder.toggle()
-            } label: {
-                Label(
-                    isAscendingOrder ? "Oldest First" : "Newest First",
-                    systemImage: isAscendingOrder ? "arrow.up" : "arrow.down")
-            }
-        } label: {
-            Image(systemName: "arrow.up.arrow.down")
-                .font(.system(size: 16, weight: .semibold))
-                .foregroundStyle(.primary)
-                .frame(width: 36, height: 36)
-                .background(Color(UIColor.tertiarySystemFill))
-                .clipShape(Circle())
-        }
-    }
 
     @ViewBuilder
     private var categoryListView: some View {
@@ -481,54 +419,54 @@ struct HomeContentView: View {
 
     @ViewBuilder
     private var contentListView: some View {
-        if displayedContents.isEmpty {
-            emptyStateView
-        } else {
-            List {
-                ForEach(displayedContents) { content in
-                    LinkCardView(
-                        content: content,
-                        onToggleFavorite: { viewModel.toggleFavorite(content) },
-                        onAddToGroup: {
-                            if let id = content.id {
-                                selectedLinkIDs = [id]
-                                showingAddToGroupSheet = true
-                            }
-                        },
-                        onDelete: { activeAlert = .deleteSingle(content) },
-                        onShare: { shareLink(content) },
-                        onTap: {
-                            if isSelectionMode {
-                                if let id = content.id {
-                                    if selectedLinkIDs.contains(id) {
-                                        selectedLinkIDs.remove(id)
-                                    } else {
-                                        selectedLinkIDs.insert(id)
-                                    }
-                                }
-                            } else {
-                                selectedContent = content
-                            }
-                        },
-                        onEnterSelectionMode: {
-                            withAnimation(.easeInOut(duration: 0.2)) {
-                                isSelectionMode = true
-                                if let id = content.id { selectedLinkIDs.insert(id) }
-                            }
-                        },
-                        isSelectionMode: isSelectionMode,
-                        isSelected: content.id.map { selectedLinkIDs.contains($0) } ?? false
-                    )
+        List {
+            if !viewModel.categories.isEmpty {
+                categoryListView
                     .listRowBackground(Color.clear)
                     .listRowInsets(EdgeInsets())
-                    .listRowSeparatorTint(Color.primary.opacity(0.08))
-                }
+                    .listRowSeparator(.hidden)
             }
-            .listStyle(.plain)
-            .animation(.none, value: displayedContents.count)
-            .refreshable { await viewModel.refresh() }
-            .sheet(isPresented: $showingAddToGroupSheet) { addToGroupSheet }
+            ForEach(displayedContents) { content in
+                LinkCardView(
+                    content: content,
+                    onToggleFavorite: { viewModel.toggleFavorite(content) },
+                    onAddToGroup: {
+                        if let id = content.id {
+                            selectedLinkIDs = [id]
+                            showingAddToGroupSheet = true
+                        }
+                    },
+                    onDelete: { activeAlert = .deleteSingle(content) },
+                    onShare: { shareLink(content) },
+                    onTap: {
+                        if isSelectionMode {
+                            if let id = content.id {
+                                if selectedLinkIDs.contains(id) { selectedLinkIDs.remove(id) }
+                                else { selectedLinkIDs.insert(id) }
+                            }
+                        } else { selectedContent = content }
+                    },
+                    onEnterSelectionMode: {
+                        withAnimation(.easeInOut(duration: 0.2)) {
+                            isSelectionMode = true
+                            if let id = content.id { selectedLinkIDs.insert(id) }
+                        }
+                    },
+                    isSelectionMode: isSelectionMode,
+                    isSelected: content.id.map { selectedLinkIDs.contains($0) } ?? false
+                )
+                .listRowBackground(Color.clear)
+                .listRowInsets(EdgeInsets())
+                .listRowSeparatorTint(Color.primary.opacity(0.08))
+                .alignmentGuide(.listRowSeparatorLeading) { _ in 82 }
+            }
         }
+        .listStyle(.plain)
+        .scrollContentBackground(.hidden)
+        .background(Color(UIColor.systemGroupedBackground).ignoresSafeArea())
+        .overlay { if displayedContents.isEmpty { emptyStateView } }
+        .animation(.none, value: displayedContents.count)
+        .refreshable { await viewModel.refresh() }
     }
 
     private var emptyStateView: some View {
@@ -561,67 +499,6 @@ struct HomeContentView: View {
             Spacer()
         }
         .frame(maxWidth: .infinity)
-    }
-
-    @ViewBuilder
-    private var bottomToolbarView: some View {
-        if isSelectionMode {
-            VStack {
-                Spacer()
-                let allSelected = !displayedContents.isEmpty && selectedLinkIDs.count == displayedContents.count
-                HStack(spacing: 12) {
-                    Button {
-                        let toDelete = displayedContents.filter { content in
-                            content.id.map { selectedLinkIDs.contains($0) } ?? false
-                        }
-                        guard !toDelete.isEmpty else { return }
-                        withAnimation {
-                            viewModel.deleteLinks(toDelete)
-                            isSelectionMode = false
-                            selectedLinkIDs.removeAll()
-                        }
-                    } label: {
-                        Text("Delete")
-                            .font(.system(size: 15, weight: .semibold))
-                            .foregroundStyle(selectedLinkIDs.isEmpty ? Color.secondary : .red)
-                            .frame(maxWidth: .infinity)
-                            .padding(.vertical, 10)
-                            .background(Color(UIColor.tertiarySystemFill))
-                            .clipShape(Capsule())
-                    }
-                    .disabled(selectedLinkIDs.isEmpty)
-
-                    Button { showingAddToGroupSheet = true } label: {
-                        Text("Move")
-                            .font(.system(size: 15, weight: .semibold))
-                            .foregroundStyle(selectedLinkIDs.isEmpty ? Color.secondary : .blue)
-                            .frame(maxWidth: .infinity)
-                            .padding(.vertical, 10)
-                            .background(Color(UIColor.tertiarySystemFill))
-                            .clipShape(Capsule())
-                    }
-                    .disabled(selectedLinkIDs.isEmpty)
-
-                    Button {
-                        let allIDs = Set(displayedContents.compactMap { $0.id })
-                        withAnimation { selectedLinkIDs = allSelected ? [] : allIDs }
-                    } label: {
-                        Text(allSelected ? "None" : "All")
-                            .font(.system(size: 15, weight: .semibold))
-                            .foregroundStyle(allSelected ? Color.blue : Color.primary)
-                            .frame(maxWidth: .infinity)
-                            .padding(.vertical, 10)
-                            .background(Color(UIColor.tertiarySystemFill))
-                            .clipShape(Capsule())
-                    }
-                }
-                .padding(.horizontal, 16)
-                .padding(.bottom, 0)
-            }
-            .transition(.move(edge: .bottom).combined(with: .opacity))
-            .animation(.spring(response: 0.35, dampingFraction: 0.8), value: isSelectionMode)
-            .zIndex(2)
-        }
     }
 
     @ViewBuilder
@@ -728,29 +605,6 @@ struct HomeContentView: View {
             },
             secondaryButton: .cancel()
         )
-    }
-
-    // Group Picker Sheet (Bottom Sheet)
-    @ViewBuilder
-    private var addToGroupSheet: some View {
-        AddToGroupPickerSheet(
-            linkViewModel: viewModel,
-            groupViewModel: groupViewModel,
-            linksToAdd: displayedContents.filter { content in
-                guard let id = content.id else { return false }
-                return selectedLinkIDs.contains(id)
-            },
-            onSuccess: {
-                showingAddToGroupSheet = false
-                isSelectionMode = false
-                selectedLinkIDs.removeAll()
-            }
-        )
-    }
-
-    private func pasteFromClipboard() {
-        // Just show the sheet
-        showingAddLinkSheet = true
     }
 
     private func shareLink(_ content: Content) {
