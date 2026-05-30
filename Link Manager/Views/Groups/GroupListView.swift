@@ -138,8 +138,7 @@ struct GroupListView: View {
                     selectionToolbar
                 }
             }
-            .toolbar(.hidden, for: .navigationBar)  // Hide default navbar
-            .toolbar(.visible, for: .tabBar)
+            .toolbar(.hidden, for: .navigationBar)
         }
         .alert("New Group", isPresented: $showingAddGroupAlert) {
             TextField("Group Name", text: $newGroupName)

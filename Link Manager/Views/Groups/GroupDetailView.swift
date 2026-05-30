@@ -132,9 +132,12 @@ struct GroupDetailView: View {
                             selectedLinkIds.removeAll()
                         }
                     } label: {
-                        Image(systemName: "xmark.circle.fill")
-                            .font(.system(size: 26, weight: .semibold))
-                            .foregroundStyle(.secondary)
+                        Image(systemName: "xmark")
+                            .font(.system(size: 16, weight: .semibold))
+                            .foregroundStyle(.primary)
+                            .frame(width: 36, height: 36)
+                            .background(Color(UIColor.tertiarySystemFill))
+                            .clipShape(Circle())
                     }
                 }
             } else {
@@ -206,8 +209,8 @@ struct GroupDetailView: View {
             }
         }
 
-        .toolbarBackground(.hidden, for: .tabBar)  // Try toolbarBackground as well
-        .toolbar(.hidden, for: .tabBar)
+        .toolbar(isSelectionMode ? .hidden : .visible, for: .tabBar)
+        .navigationBarBackButtonHidden(isSelectionMode)
         .safeAreaInset(edge: .bottom) {
             if isSelectionMode {
                 selectionActionBar
