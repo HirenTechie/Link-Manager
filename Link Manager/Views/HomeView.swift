@@ -46,10 +46,13 @@ struct HomeView: View {
                 )
             }
 
-            Tab("", systemImage: "plus", value: AppTab.add) {
+            Tab("", systemImage: "plus", value: AppTab.add, role: .search) {
                 GroupListView(linkViewModel: viewModel, groupViewModel: groupViewModel)
             }
+            .tabPlacement(.)
+            
         }
+        
         .tint(.blue)
     }
 }
@@ -177,6 +180,7 @@ struct HomeContentView: View {
                 successOverlay
             }
             .navigationBarHidden(true)
+            .toolbar(isSelectionMode ? .hidden : .visible, for: .tabBar)
             .onAppear {
                 Task {
                     await viewModel.refresh()
@@ -279,7 +283,13 @@ struct HomeContentView: View {
     private var headerView: some View {
         HStack(alignment: .center) {
             if isSelectionMode {
-                // WA-style: deselect-all button top-left
+                Text(selectedLinkIDs.isEmpty ? "Select Items" : "\(selectedLinkIDs.count) selected")
+                    .font(.system(.title3, weight: .bold))
+                    .foregroundStyle(.primary)
+                    .animation(.none, value: selectedLinkIDs.count)
+
+                Spacer()
+
                 Button {
                     withAnimation(.easeInOut(duration: 0.2)) {
                         isSelectionMode = false
@@ -287,23 +297,9 @@ struct HomeContentView: View {
                     }
                 } label: {
                     Image(systemName: "xmark.circle.fill")
-                        .font(.system(size: 26, weight: .semibold))
+                        .font(.system(size: 28, weight: .semibold))
                         .foregroundStyle(.secondary)
                 }
-
-                Spacer()
-
-                Text("\(selectedLinkIDs.count) selected")
-                    .font(.system(.title3, weight: .bold))
-                    .foregroundStyle(.primary)
-                    .animation(.none, value: selectedLinkIDs.count)
-
-                Spacer()
-
-                // Invisible spacer to balance layout
-                Image(systemName: "xmark.circle.fill")
-                    .font(.system(size: 26))
-                    .opacity(0)
             } else {
                 VStack(alignment: .leading, spacing: 4) {
                     Text(showFavoritesOnly ? "Favorites" : "Link Manager")
@@ -543,7 +539,7 @@ struct HomeContentView: View {
                 Spacer()
                 HStack(spacing: 12) {
                     // Delete
-                    toolbarButton(
+                    selectionPillButton(
                         icon: "trash.fill",
                         label: "Delete",
                         tint: .red,
@@ -560,35 +556,30 @@ struct HomeContentView: View {
                         }
                     }
 
-                    // Add to Group
-                    toolbarButton(
-                        icon: "folder.badge.plus",
-                        label: "Group",
+                    // Move to Group
+                    selectionPillButton(
+                        icon: "folder.fill",
+                        label: "Move",
                         tint: .blue,
                         disabled: selectedLinkIDs.isEmpty
                     ) {
                         showingAddToGroupSheet = true
                     }
 
-                    // Select All / None
-                    let allSelected = selectedLinkIDs.count == displayedContents.count
-                    toolbarButton(
+                    // Select All / Deselect All
+                    let allSelected = selectedLinkIDs.count == displayedContents.count && !displayedContents.isEmpty
+                    selectionPillButton(
                         icon: allSelected ? "checkmark.circle.fill" : "circle",
-                        label: allSelected ? "None" : "All",
-                        tint: .primary,
+                        label: "All",
+                        tint: allSelected ? .blue : .primary,
                         disabled: false
                     ) {
                         let allIDs = Set(displayedContents.compactMap { $0.id })
-                        selectedLinkIDs = allSelected ? [] : allIDs
+                        withAnimation { selectedLinkIDs = allSelected ? [] : allIDs }
                     }
                 }
                 .padding(.horizontal, 16)
-                .padding(.vertical, 12)
-                .background(.ultraThinMaterial)
-                .clipShape(RoundedRectangle(cornerRadius: 24))
-                .shadow(color: .black.opacity(0.15), radius: 12, x: 0, y: -2)
-                .padding(.horizontal, 16)
-                .padding(.bottom, 12)
+                .padding(.bottom, 28)
             }
             .transition(.move(edge: .bottom).combined(with: .opacity))
             .animation(.spring(response: 0.35, dampingFraction: 0.8), value: isSelectionMode)
@@ -596,8 +587,7 @@ struct HomeContentView: View {
         }
     }
 
-    @ViewBuilder
-    private func toolbarButton(
+    private func selectionPillButton(
         icon: String,
         label: String,
         tint: Color,
@@ -605,16 +595,19 @@ struct HomeContentView: View {
         action: @escaping () -> Void
     ) -> some View {
         Button(action: action) {
-            VStack(spacing: 4) {
+            VStack(spacing: 5) {
                 Image(systemName: icon)
-                    .font(.system(size: 20, weight: .semibold))
+                    .font(.system(size: 22, weight: .semibold))
                 Text(label)
-                    .font(.caption2)
-                    .fontWeight(.bold)
+                    .font(.caption)
+                    .fontWeight(.semibold)
             }
             .foregroundStyle(tint.opacity(disabled ? 0.3 : 1.0))
             .frame(maxWidth: .infinity)
-            .frame(height: 52)
+            .frame(height: 66)
+            .background(.ultraThinMaterial)
+            .clipShape(RoundedRectangle(cornerRadius: 18, style: .continuous))
+            .shadow(color: .black.opacity(0.12), radius: 8, x: 0, y: 2)
         }
         .disabled(disabled)
     }
