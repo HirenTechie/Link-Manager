@@ -86,7 +86,7 @@ struct LinkCardView: View {
                     Text(url)
                         .font(.caption)
                         .foregroundStyle(.secondary)
-                        .lineLimit(1)
+                        .lineLimit(2)
                 }
 
                 if let category = content.category?.name {
@@ -102,15 +102,13 @@ struct LinkCardView: View {
 
             Spacer(minLength: 4)
 
-            VStack(alignment: .trailing, spacing: 0) {
+            VStack(alignment: .trailing, spacing: 4) {
                 if let date = content.creationDate {
                     Text(date.formatted(date: .numeric, time: .omitted))
                         .font(.caption2)
                         .foregroundStyle(.tertiary)
                         .fixedSize()
                 }
-
-                Spacer(minLength: 4)
 
                 if !isSelectionMode {
                     Button(action: onToggleFavorite) {
@@ -195,7 +193,7 @@ struct LinkCardView: View {
                     Text(url)
                         .font(.caption)
                         .foregroundStyle(.secondary)
-                        .lineLimit(1)
+                        .lineLimit(2)
                 }
             }
             .padding(.horizontal, 12)
