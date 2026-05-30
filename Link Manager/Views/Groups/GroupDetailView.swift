@@ -116,97 +116,91 @@ struct GroupDetailView: View {
                 .zIndex(2)
             }
         }
-        .navigationTitle(group.name ?? "Group")
+        .navigationTitle(
+            isSelectionMode
+                ? (selectedLinkIds.isEmpty ? "Select Items" : "\(selectedLinkIds.count) Selected")
+                : (group.name ?? "Group")
+        )
         .navigationBarTitleDisplayMode(.large)
         .searchable(text: $searchText)
         .toolbar {
-            ToolbarItem(placement: .navigationBarTrailing) {
-                HStack(spacing: 12) {
-                    // Rename/Edit Actions (Only when NOT in selection mode?)
-                    // Or keep the old specific actions but style them?
-                    // User wants "consitancy". Home View has: [Selection Circle] [Sort Circle].
-
-                    // Group Options (Rename, Add Links, Delete) -> maybe keep as a trailing menu or separate?
-                    // HomeView has "Edit/Select" and "Sort". GroupView has more actions.
-                    // Let's keep the "Options" menu for Group Actions, but use the Circle style for Select and Sort.
-
-                    Menu {
-                        Button(action: {
-                            newGroupName = group.name ?? ""
-                            showingRenameGroupAlert = true
-                        }) {
-                            Label("Rename Group", systemImage: "pencil")
-                        }
-
-                        Divider()
-
-                        Button(
-                            role: .destructive,
-                            action: {
-                                showingDeleteGroupConfirmation = true
-                            }
-                        ) {
-                            Label("Delete Group", systemImage: "trash")
+            if isSelectionMode {
+                ToolbarItem(placement: .navigationBarTrailing) {
+                    Button {
+                        withAnimation(.easeInOut(duration: 0.2)) {
+                            isSelectionMode = false
+                            selectedLinkIds.removeAll()
                         }
                     } label: {
-                        Image(systemName: "ellipsis")
-                            .font(.system(size: 16, weight: .semibold))
-                            .foregroundStyle(.primary)
-                        //.frame(width: 36, height: 36)
-                        //.background(Color(UIColor.tertiarySystemFill))
-                        //.clipShape(Circle())
-                        // Keeping it simple for standard nav bar item, or make it a circle too?
+                        Image(systemName: "xmark.circle.fill")
+                            .font(.system(size: 26, weight: .semibold))
+                            .foregroundStyle(.secondary)
                     }
-
-                    // Selection Button
-                    Button(action: {
-                        withAnimation(.easeInOut(duration: 0.2)) {
-                            isSelectionMode.toggle()
-                            if !isSelectionMode { selectedLinkIds.removeAll() }
-                        }
-                    }) {
-                        Image(systemName: isSelectionMode ? "checkmark.circle.fill" : "checklist")
-                            .font(.system(size: 16, weight: .semibold))
-                            .foregroundStyle(isSelectionMode ? .white : .primary)
-                            .frame(width: 36, height: 36)
-                            .background(
-                                isSelectionMode ? Color.blue : Color(UIColor.tertiarySystemFill)
-                            )
-                            .clipShape(Circle())
-                    }
-
-                    // Sort Button (HomeView Style)
-                    Menu {
-                        Picker("Sort By", selection: $sortOption) {
-                            Label("Date", systemImage: "calendar").tag(SortOption.dateNewest)  // Defaulting to newest logic
-                            Label("Title", systemImage: "textformat").tag(SortOption.titleAZ)
-                            Label("Website", systemImage: "globe").tag(SortOption.domain)
-                        }
-
-                        Divider()
-
-                        // Toggle Logic for Sort Order (Simplifying SortOption to just key + boolean would be better, but mapping for now)
-                        Button {
-                            switch sortOption {
-                            case .dateNewest: sortOption = .dateOldest
-                            case .dateOldest: sortOption = .dateNewest
-                            case .titleAZ: sortOption = .titleZA
-                            case .titleZA: sortOption = .titleAZ
-                            default: break
+                }
+            } else {
+                ToolbarItem(placement: .navigationBarTrailing) {
+                    HStack(spacing: 12) {
+                        Menu {
+                            Button(action: {
+                                newGroupName = group.name ?? ""
+                                showingRenameGroupAlert = true
+                            }) {
+                                Label("Rename Group", systemImage: "pencil")
+                            }
+                            Divider()
+                            Button(role: .destructive, action: { showingDeleteGroupConfirmation = true }) {
+                                Label("Delete Group", systemImage: "trash")
                             }
                         } label: {
-                            Label(
-                                (sortOption == .dateNewest || sortOption == .titleAZ)
-                                    ? "Ascending" : "Descending",  // Label logic approx
-                                systemImage: "arrow.up.arrow.down")
+                            Image(systemName: "ellipsis")
+                                .font(.system(size: 16, weight: .semibold))
+                                .foregroundStyle(.primary)
+                                .frame(width: 36, height: 36)
+                                .background(Color(UIColor.tertiarySystemFill))
+                                .clipShape(Circle())
                         }
-                    } label: {
-                        Image(systemName: "arrow.up.arrow.down")
-                            .font(.system(size: 16, weight: .semibold))
-                            .foregroundStyle(.primary)
-                            .frame(width: 36, height: 36)
-                            .background(Color(UIColor.tertiarySystemFill))
-                            .clipShape(Circle())
+
+                        Button(action: {
+                            withAnimation(.easeInOut(duration: 0.2)) {
+                                isSelectionMode = true
+                            }
+                        }) {
+                            Image(systemName: "checklist")
+                                .font(.system(size: 16, weight: .semibold))
+                                .foregroundStyle(.primary)
+                                .frame(width: 36, height: 36)
+                                .background(Color(UIColor.tertiarySystemFill))
+                                .clipShape(Circle())
+                        }
+
+                        Menu {
+                            Picker("Sort By", selection: $sortOption) {
+                                Label("Date", systemImage: "calendar").tag(SortOption.dateNewest)
+                                Label("Title", systemImage: "textformat").tag(SortOption.titleAZ)
+                                Label("Website", systemImage: "globe").tag(SortOption.domain)
+                            }
+                            Divider()
+                            Button {
+                                switch sortOption {
+                                case .dateNewest: sortOption = .dateOldest
+                                case .dateOldest: sortOption = .dateNewest
+                                case .titleAZ: sortOption = .titleZA
+                                case .titleZA: sortOption = .titleAZ
+                                default: break
+                                }
+                            } label: {
+                                Label(
+                                    (sortOption == .dateNewest || sortOption == .titleAZ) ? "Ascending" : "Descending",
+                                    systemImage: "arrow.up.arrow.down")
+                            }
+                        } label: {
+                            Image(systemName: "arrow.up.arrow.down")
+                                .font(.system(size: 16, weight: .semibold))
+                                .foregroundStyle(.primary)
+                                .frame(width: 36, height: 36)
+                                .background(Color(UIColor.tertiarySystemFill))
+                                .clipShape(Circle())
+                        }
                     }
                 }
             }
@@ -311,6 +305,12 @@ struct GroupDetailView: View {
                             }
                         } else {
                             selectedContent = content
+                        }
+                    },
+                    onEnterSelectionMode: {
+                        withAnimation(.easeInOut(duration: 0.2)) {
+                            isSelectionMode = true
+                            selectedLinkIds.insert(content.objectID)
                         }
                     },
                     isSelectionMode: isSelectionMode,
@@ -429,87 +429,49 @@ struct GroupDetailView: View {
     }
 
     var selectionActionBar: some View {
-        VStack {
-            Spacer()
-            HStack(spacing: 16) {
-                // Delete Button
-                Button(action: {
-                    deleteSelectedLinks()
-                }) {
-                    VStack(spacing: 4) {
-                        Image(systemName: "trash.fill")
-                            .font(.system(size: 20))
-                        Text("Delete")  // User said "Trash color red" - making bg red
-                            .font(.caption2)
-                            .fontWeight(.bold)
-                    }
-                    .foregroundColor(.white)
-                    .frame(maxWidth: .infinity)
-                    .frame(height: 56)
-                    .background(selectedLinkIds.isEmpty ? Color.gray.opacity(0.3) : Color.red)
-                    .clipShape(RoundedRectangle(cornerRadius: 16))
-                }
-                .disabled(selectedLinkIds.isEmpty)
-
-                // Move Button (Instead of "Add to Group" which makes no sense here)
-                // User said "Selection to show this type of UI but not add the group".
-                // Image showed Middle Button "Group".
-                // I will put "Move" here with folder icon, similar to "Group".
-                Button(action: {
-                    showingAddToOtherGroupSheet = true
-                }) {
-                    VStack(spacing: 4) {
-                        Image(systemName: "folder.fill")
-                            .font(.system(size: 20))
-                        Text("Move")
-                            .font(.caption2)
-                            .fontWeight(.bold)
-                    }
-                    .foregroundColor(.white)
-                    .frame(maxWidth: .infinity)
-                    .frame(height: 56)
-                    .background(selectedLinkIds.isEmpty ? Color.gray.opacity(0.3) : Color.blue)
-                    .clipShape(RoundedRectangle(cornerRadius: 16))
-                }
-                .disabled(selectedLinkIds.isEmpty)
-
-                // Select All Button
-                Button(action: {
-                    let allIDs = Set(links.compactMap { $0.objectID })
-                    if selectedLinkIds.count == allIDs.count {
-                        selectedLinkIds.removeAll()
-                    } else {
-                        selectedLinkIds = allIDs
-                    }
-                }) {
-                    VStack(spacing: 4) {
-                        Image(
-                            systemName: selectedLinkIds.count == links.count
-                                ? "checkmark.circle.fill" : "circle"
-                        )
-                        .font(.system(size: 20))
-                        Text(
-                            selectedLinkIds.count == links.count
-                                ? "None" : "All"
-                        )
-                        .font(.caption2)
-                        .fontWeight(.bold)
-                    }
-                    .foregroundColor(.primary)
-                    .frame(maxWidth: .infinity)
-                    .frame(height: 56)
-                    .background(Color(UIColor.tertiarySystemGroupedBackground))
-                    .clipShape(RoundedRectangle(cornerRadius: 16))
-                }
+        let allSelected = !links.isEmpty && selectedLinkIds.count == links.count
+        return HStack(spacing: 12) {
+            groupSelectionPillButton(icon: "trash.fill", label: "Delete", tint: .red, disabled: selectedLinkIds.isEmpty) {
+                deleteSelectedLinks()
             }
-            .padding()
-            .background(Color(UIColor.systemGroupedBackground).opacity(0.95))
-            .cornerRadius(24)
-            .padding(.horizontal)
-            .padding(.bottom, 8)
+            groupSelectionPillButton(icon: "folder.fill", label: "Move", tint: .blue, disabled: selectedLinkIds.isEmpty) {
+                showingAddToOtherGroupSheet = true
+            }
+            groupSelectionPillButton(
+                icon: allSelected ? "checkmark.circle.fill" : "circle",
+                label: "All",
+                tint: allSelected ? .blue : .primary,
+                disabled: false
+            ) {
+                let allIDs = Set(links.map { $0.objectID })
+                withAnimation { selectedLinkIds = allSelected ? [] : allIDs }
+            }
         }
+        .padding(.horizontal, 16)
+        .padding(.vertical, 12)
+        .padding(.bottom, 8)
         .transition(.move(edge: .bottom).combined(with: .opacity))
-        .zIndex(2)
+    }
+
+    private func groupSelectionPillButton(
+        icon: String, label: String, tint: Color, disabled: Bool, action: @escaping () -> Void
+    ) -> some View {
+        Button(action: action) {
+            VStack(spacing: 5) {
+                Image(systemName: icon)
+                    .font(.system(size: 22, weight: .semibold))
+                Text(label)
+                    .font(.caption)
+                    .fontWeight(.semibold)
+            }
+            .foregroundStyle(tint.opacity(disabled ? 0.3 : 1.0))
+            .frame(maxWidth: .infinity)
+            .frame(height: 66)
+            .background(.ultraThinMaterial)
+            .clipShape(RoundedRectangle(cornerRadius: 18, style: .continuous))
+            .shadow(color: .black.opacity(0.12), radius: 8, x: 0, y: 2)
+        }
+        .disabled(disabled)
     }
 
     func deleteSelectedLinks() {
