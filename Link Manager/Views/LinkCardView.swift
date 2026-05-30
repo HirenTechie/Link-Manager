@@ -75,38 +75,52 @@ struct LinkCardView: View {
     // MARK: - Content
 
     private var contentView: some View {
-        VStack(alignment: .leading, spacing: 4) {
-            HStack(alignment: .top, spacing: 8) {
+        HStack(alignment: .top, spacing: 8) {
+            VStack(alignment: .leading, spacing: 4) {
                 Text(content.title ?? "Unknown Title")
                     .font(.system(.body, weight: .semibold))
                     .foregroundStyle(.primary)
                     .lineLimit(1)
 
-                Spacer()
+                if let url = content.savedLinkUrl {
+                    Text(url)
+                        .font(.caption)
+                        .foregroundStyle(.secondary)
+                        .lineLimit(1)
+                }
 
+                if let category = content.category?.name {
+                    Text(category.uppercased())
+                        .font(.system(size: 10, weight: .bold))
+                        .padding(.horizontal, 7)
+                        .padding(.vertical, 3)
+                        .background(Color.blue.opacity(0.1))
+                        .foregroundStyle(.blue)
+                        .clipShape(Capsule())
+                }
+            }
+
+            Spacer(minLength: 4)
+
+            VStack(alignment: .trailing, spacing: 0) {
                 if let date = content.creationDate {
                     Text(date.formatted(date: .numeric, time: .omitted))
                         .font(.caption2)
                         .foregroundStyle(.tertiary)
                         .fixedSize()
                 }
-            }
 
-            if let url = content.savedLinkUrl {
-                Text(url)
-                    .font(.caption)
-                    .foregroundStyle(.secondary)
-                    .lineLimit(1)
-            }
+                Spacer(minLength: 4)
 
-            if let category = content.category?.name {
-                Text(category.uppercased())
-                    .font(.system(size: 10, weight: .bold))
-                    .padding(.horizontal, 7)
-                    .padding(.vertical, 3)
-                    .background(Color.blue.opacity(0.1))
-                    .foregroundStyle(.blue)
-                    .clipShape(Capsule())
+                if !isSelectionMode {
+                    Button(action: onToggleFavorite) {
+                        Image(systemName: content.isFavorite ? "heart.fill" : "heart")
+                            .font(.system(size: 13, weight: .semibold))
+                            .foregroundStyle(content.isFavorite ? Color.pink : Color.secondary)
+                            .frame(width: 36, height: 28)
+                    }
+                    .buttonStyle(PlainButtonStyle())
+                }
             }
         }
     }
