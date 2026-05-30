@@ -6,6 +6,7 @@ struct GroupDetailView: View {
     @ObservedObject var group: LinkGroup
     @ObservedObject var groupViewModel: LinkGroupViewModel
     @ObservedObject var linkViewModel: LinkViewModel
+    @EnvironmentObject var appState: AppState
 
     enum SortOption {
         case dateNewest
@@ -32,6 +33,7 @@ struct GroupDetailView: View {
 
     // View State
     @State private var searchText = ""
+    @State private var showAddActionSheet = false
     @Environment(\.presentationMode) var presentationMode
 
     @State private var selectedCategory: Category?  // For filter
@@ -86,28 +88,6 @@ struct GroupDetailView: View {
                 linkListView
             }
 
-            // FAB — bottom left, circle + button
-            if !isSelectionMode {
-                VStack {
-                    Spacer()
-                    HStack {
-                        Button(action: { showingPasteLinkSheet = true }) {
-                            Image(systemName: "plus")
-                                .font(.system(size: 24, weight: .bold))
-                                .foregroundColor(.white)
-                                .frame(width: 60, height: 60)
-                                .background(Color.blue)
-                                .clipShape(Circle())
-                                .shadow(color: Color.blue.opacity(0.4), radius: 6, x: 0, y: 4)
-                        }
-                        .padding(.leading, 24)
-                        .padding(.bottom, 24)
-                        Spacer()
-                    }
-                }
-                .transition(.scale.combined(with: .opacity))
-                .zIndex(2)
-            }
         }
         .navigationTitle(
             isSelectionMode
@@ -231,6 +211,19 @@ struct GroupDetailView: View {
 
         .toolbar(isSelectionMode ? .hidden : .visible, for: .tabBar)
         .navigationBarBackButtonHidden(isSelectionMode)
+        .onAppear { appState.isInGroupDetail = true }
+        .onDisappear { appState.isInGroupDetail = false }
+        .onChange(of: appState.showAddInGroupDetail) { show in
+            if show {
+                showAddActionSheet = true
+                appState.showAddInGroupDetail = false
+            }
+        }
+        .confirmationDialog("Add Links", isPresented: $showAddActionSheet, titleVisibility: .visible) {
+            Button("New Link") { showingPasteLinkSheet = true }
+            Button("Existing Links") { showingAddLinksSheet = true }
+            Button("Cancel", role: .cancel) {}
+        }
         .sheet(isPresented: $showingAddLinksSheet) {
             AddLinksToGroupSheet(
                 group: group, linkViewModel: linkViewModel, groupViewModel: groupViewModel)
@@ -525,4 +518,5 @@ struct GroupDetailView: View {
         GroupDetailView(group: group, groupViewModel: groupVM, linkViewModel: linkVM)
     }
     .environment(\.managedObjectContext, ctx)
+    .environmentObject(AppState())
 }

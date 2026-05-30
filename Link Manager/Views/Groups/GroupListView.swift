@@ -5,6 +5,7 @@ import UIKit
 struct GroupListView: View {
     @ObservedObject var groupViewModel: LinkGroupViewModel
     @ObservedObject var linkViewModel: LinkViewModel
+    @EnvironmentObject var appState: AppState
     @State private var showingAddGroupAlert = false
     @State private var newGroupName = ""
     @State private var selectedGroup: LinkGroup?
@@ -128,17 +129,19 @@ struct GroupListView: View {
                     emptyState
                 }
 
-                // Floating Action Button
-                if !isSelectionMode {
-                    fabView
-                }
-
                 // Bottom Toolbar
                 if isSelectionMode {
                     selectionToolbar
                 }
             }
             .toolbar(.hidden, for: .navigationBar)
+        .onChange(of: appState.showAddGroupAlert) { show in
+            if show {
+                newGroupName = ""
+                showingAddGroupAlert = true
+                appState.showAddGroupAlert = false
+            }
+        }
         }
         .alert("New Group", isPresented: $showingAddGroupAlert) {
             TextField("Group Name", text: $newGroupName)

@@ -5,10 +5,19 @@ import Lottie
 import SwiftUI
 import UIKit
 
+class AppState: ObservableObject {
+    @Published var showAddLinkInHome = false
+    @Published var showAddGroupAlert = false
+    @Published var showAddInGroupDetail = false
+    @Published var isInGroupDetail = false
+}
+
 struct HomeView: View {
     @StateObject private var viewModel: LinkViewModel
     @StateObject private var groupViewModel: LinkGroupViewModel
+    @StateObject private var appState = AppState()
     @State private var selectedTab: AppTab = .home
+    @State private var previousTab: AppTab = .home
 
     enum AppTab: Hashable {
         case home, groups, favorites, add
@@ -47,13 +56,30 @@ struct HomeView: View {
             }
 
             Tab("", systemImage: "plus", value: AppTab.add, role: .search) {
-                GroupListView(linkViewModel: viewModel, groupViewModel: groupViewModel)
+                EmptyView()
             }
-            
-            
         }
-        
         .tint(.blue)
+        .environmentObject(appState)
+        .onChange(of: selectedTab) { newVal in
+            if newVal == .add {
+                switch previousTab {
+                case .home:
+                    appState.showAddLinkInHome = true
+                case .groups:
+                    if appState.isInGroupDetail {
+                        appState.showAddInGroupDetail = true
+                    } else {
+                        appState.showAddGroupAlert = true
+                    }
+                default:
+                    break
+                }
+                selectedTab = previousTab
+            } else {
+                previousTab = newVal
+            }
+        }
     }
 }
 
@@ -61,6 +87,7 @@ struct HomeContentView: View {
     @ObservedObject var viewModel: LinkViewModel
     @ObservedObject var groupViewModel: LinkGroupViewModel
     var showFavoritesOnly: Bool
+    @EnvironmentObject var appState: AppState
 
     @Environment(\.managedObjectContext) private var viewContext
     @Environment(\.scenePhase) var scenePhase
@@ -175,12 +202,16 @@ struct HomeContentView: View {
 
                 bottomToolbarView
 
-                floatingActionButtonView
-
                 successOverlay
             }
             .navigationBarHidden(true)
             .toolbar(isSelectionMode ? .hidden : .visible, for: .tabBar)
+            .onChange(of: appState.showAddLinkInHome) { show in
+                if show && !showFavoritesOnly {
+                    showingAddLinkSheet = true
+                    appState.showAddLinkInHome = false
+                }
+            }
             .onAppear {
                 Task {
                     await viewModel.refresh()
@@ -590,31 +621,6 @@ struct HomeContentView: View {
             .transition(.move(edge: .bottom).combined(with: .opacity))
             .animation(.spring(response: 0.35, dampingFraction: 0.8), value: isSelectionMode)
             .zIndex(2)
-        }
-    }
-
-    @ViewBuilder
-    private var floatingActionButtonView: some View {
-        if !isSelectionMode && !showFavoritesOnly {  // Only show Add button in Main list
-            VStack {
-                Spacer()
-                HStack {
-                    Spacer()
-                    Button(action: pasteFromClipboard) {
-                        Image(systemName: "plus")
-                            .font(.system(size: 24, weight: .bold))
-                            .foregroundColor(.white)
-                            .frame(width: 60, height: 60)
-                            .background(Color.blue)
-                            .clipShape(Circle())
-                            .shadow(color: Color.blue.opacity(0.4), radius: 6, x: 0, y: 4)
-                    }
-                    .padding(.trailing, 24)
-                    .padding(.bottom, 24)
-                }
-            }
-            .transition(.scale.combined(with: .opacity))
-            .zIndex(3)
         }
     }
 
