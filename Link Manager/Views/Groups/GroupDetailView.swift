@@ -210,23 +210,28 @@ struct GroupDetailView: View {
                                 .font(.system(size: 16, weight: .semibold))
                                 .foregroundStyle(.primary)
                         }
+                    }
+                }
 
-                        Menu {
-                            Button(action: {
-                                newGroupName = group.name ?? ""
-                                showingRenameGroupAlert = true
-                            }) {
-                                Label("Rename Group", systemImage: "pencil")
-                            }
-                            Divider()
-                            Button(role: .destructive, action: { showingDeleteGroupConfirmation = true }) {
-                                Label("Delete Group", systemImage: "trash")
-                            }
-                        } label: {
-                            Image(systemName: "ellipsis")
-                                .font(.system(size: 16, weight: .semibold))
-                                .foregroundStyle(.primary)
+                ToolbarItem(placement: .navigationBarTrailing) {
+                    Menu {
+                        Button(action: {
+                            newGroupName = group.name ?? ""
+                            showingRenameGroupAlert = true
+                        }) {
+                            Label("Rename Group", systemImage: "pencil")
                         }
+                        Divider()
+                        Button(role: .destructive, action: { showingDeleteGroupConfirmation = true }) {
+                            Label("Delete Group", systemImage: "trash")
+                        }
+                    } label: {
+                        Image(systemName: "ellipsis")
+                            .font(.system(size: 16, weight: .semibold))
+                            .foregroundStyle(.primary)
+                            .frame(width: 36, height: 36)
+                            .background(Color(UIColor.tertiarySystemFill))
+                            .clipShape(Circle())
                     }
                 }
             }
