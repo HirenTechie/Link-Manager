@@ -432,27 +432,27 @@ struct GroupDetailView: View {
         let allSelected = !links.isEmpty && selectedLinkIds.count == links.count
         return HStack(spacing: 12) {
             Button("Delete") { deleteSelectedLinks() }
-                .font(.subheadline.weight(.semibold))
-                .foregroundStyle(selectedLinkIds.isEmpty ? Color.secondary : .red)
-                .frame(maxWidth: .infinity, minHeight: 50)
-                .background(.ultraThinMaterial, in: Capsule())
+                .buttonStyle(.bordered)
+                .controlSize(.large)
+                .tint(.red)
+                .frame(maxWidth: .infinity)
                 .disabled(selectedLinkIds.isEmpty)
 
             Button("Move") { showingAddToOtherGroupSheet = true }
-                .font(.subheadline.weight(.semibold))
-                .foregroundStyle(selectedLinkIds.isEmpty ? Color.secondary : .blue)
-                .frame(maxWidth: .infinity, minHeight: 50)
-                .background(.ultraThinMaterial, in: Capsule())
+                .buttonStyle(.bordered)
+                .controlSize(.large)
+                .tint(.blue)
+                .frame(maxWidth: .infinity)
                 .disabled(selectedLinkIds.isEmpty)
 
             Button(allSelected ? "None" : "All") {
                 let allIDs = Set(links.map { $0.objectID })
                 withAnimation { selectedLinkIds = allSelected ? [] : allIDs }
             }
-            .font(.subheadline.weight(.semibold))
-            .foregroundStyle(allSelected ? Color.blue : Color.primary)
-            .frame(maxWidth: .infinity, minHeight: 50)
-            .background(.ultraThinMaterial, in: Capsule())
+            .buttonStyle(.bordered)
+            .controlSize(.large)
+            .tint(allSelected ? .blue : .primary)
+            .frame(maxWidth: .infinity)
         }
         .padding(.horizontal, 16)
         .padding(.vertical, 12)

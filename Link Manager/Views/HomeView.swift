@@ -550,27 +550,27 @@ struct HomeContentView: View {
                             selectedLinkIDs.removeAll()
                         }
                     }
-                    .font(.subheadline.weight(.semibold))
-                    .foregroundStyle(selectedLinkIDs.isEmpty ? Color.secondary : .red)
-                    .frame(maxWidth: .infinity, minHeight: 50)
-                    .background(.ultraThinMaterial, in: Capsule())
+                    .buttonStyle(.bordered)
+                    .controlSize(.large)
+                    .tint(.red)
+                    .frame(maxWidth: .infinity)
                     .disabled(selectedLinkIDs.isEmpty)
 
                     Button("Move") { showingAddToGroupSheet = true }
-                        .font(.subheadline.weight(.semibold))
-                        .foregroundStyle(selectedLinkIDs.isEmpty ? Color.secondary : .blue)
-                        .frame(maxWidth: .infinity, minHeight: 50)
-                        .background(.ultraThinMaterial, in: Capsule())
+                        .buttonStyle(.bordered)
+                        .controlSize(.large)
+                        .tint(.blue)
+                        .frame(maxWidth: .infinity)
                         .disabled(selectedLinkIDs.isEmpty)
 
                     Button(allSelected ? "None" : "All") {
                         let allIDs = Set(displayedContents.compactMap { $0.id })
                         withAnimation { selectedLinkIDs = allSelected ? [] : allIDs }
                     }
-                    .font(.subheadline.weight(.semibold))
-                    .foregroundStyle(allSelected ? Color.blue : Color.primary)
-                    .frame(maxWidth: .infinity, minHeight: 50)
-                    .background(.ultraThinMaterial, in: Capsule())
+                    .buttonStyle(.bordered)
+                    .controlSize(.large)
+                    .tint(allSelected ? .blue : .primary)
+                    .frame(maxWidth: .infinity)
                 }
                 .padding(.horizontal, 16)
                 .padding(.bottom, 28)
