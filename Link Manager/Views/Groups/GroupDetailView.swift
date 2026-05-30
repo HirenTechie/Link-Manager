@@ -138,43 +138,46 @@ struct GroupDetailView: View {
                     }
                 }
 
-                ToolbarItem(placement: .bottomBar) {
+                ToolbarItemGroup(placement: .bottomBar) {
                     let allSelected = !links.isEmpty && selectedLinkIds.count == links.count
-                    HStack(spacing: 12) {
-                        Button { deleteSelectedLinks() } label: {
-                            Text("Delete")
-                                .font(.system(size: 15, weight: .semibold))
-                                .foregroundStyle(selectedLinkIds.isEmpty ? Color.secondary : .red)
-                                .frame(maxWidth: .infinity)
-                                .padding(.vertical, 10)
-                                .background(Color(UIColor.tertiarySystemFill))
-                                .clipShape(Capsule())
-                        }
-                        .disabled(selectedLinkIds.isEmpty)
 
-                        Button { showingAddToOtherGroupSheet = true } label: {
-                            Text("Move")
-                                .font(.system(size: 15, weight: .semibold))
-                                .foregroundStyle(selectedLinkIds.isEmpty ? Color.secondary : .blue)
-                                .frame(maxWidth: .infinity)
-                                .padding(.vertical, 10)
-                                .background(Color(UIColor.tertiarySystemFill))
-                                .clipShape(Capsule())
-                        }
-                        .disabled(selectedLinkIds.isEmpty)
+                    Button { deleteSelectedLinks() } label: {
+                        Text("Delete")
+                            .font(.system(size: 15, weight: .semibold))
+                            .foregroundStyle(selectedLinkIds.isEmpty ? Color.secondary : .red)
+                            .padding(.horizontal, 20)
+                            .padding(.vertical, 10)
+                            .background(Color(UIColor.tertiarySystemFill))
+                            .clipShape(Capsule())
+                    }
+                    .disabled(selectedLinkIds.isEmpty)
 
-                        Button {
-                            let allIDs = Set(links.map { $0.objectID })
-                            withAnimation { selectedLinkIds = allSelected ? [] : allIDs }
-                        } label: {
-                            Text(allSelected ? "None" : "All")
-                                .font(.system(size: 15, weight: .semibold))
-                                .foregroundStyle(allSelected ? Color.blue : Color.primary)
-                                .frame(maxWidth: .infinity)
-                                .padding(.vertical, 10)
-                                .background(Color(UIColor.tertiarySystemFill))
-                                .clipShape(Capsule())
-                        }
+                    Spacer()
+
+                    Button { showingAddToOtherGroupSheet = true } label: {
+                        Text("Move")
+                            .font(.system(size: 15, weight: .semibold))
+                            .foregroundStyle(selectedLinkIds.isEmpty ? Color.secondary : .blue)
+                            .padding(.horizontal, 20)
+                            .padding(.vertical, 10)
+                            .background(Color(UIColor.tertiarySystemFill))
+                            .clipShape(Capsule())
+                    }
+                    .disabled(selectedLinkIds.isEmpty)
+
+                    Spacer()
+
+                    Button {
+                        let allIDs = Set(links.map { $0.objectID })
+                        withAnimation { selectedLinkIds = allSelected ? [] : allIDs }
+                    } label: {
+                        Text(allSelected ? "None" : "All")
+                            .font(.system(size: 15, weight: .semibold))
+                            .foregroundStyle(allSelected ? Color.blue : Color.primary)
+                            .padding(.horizontal, 20)
+                            .padding(.vertical, 10)
+                            .background(Color(UIColor.tertiarySystemFill))
+                            .clipShape(Capsule())
                     }
                 }
             } else {
