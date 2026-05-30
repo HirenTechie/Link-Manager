@@ -115,9 +115,11 @@ struct LinkCardView: View {
                 if !isSelectionMode {
                     Button(action: onToggleFavorite) {
                         Image(systemName: content.isFavorite ? "heart.fill" : "heart")
-                            .font(.system(size: 13, weight: .semibold))
-                            .foregroundStyle(content.isFavorite ? Color.pink : Color.secondary)
-                            .frame(width: 36, height: 28)
+                            .font(.system(size: 16, weight: .semibold))
+                            .foregroundStyle(content.isFavorite ? Color.white : Color.secondary)
+                            .frame(width: 36, height: 36)
+                            .background(content.isFavorite ? Color.pink : Color.clear)
+                            .clipShape(Circle())
                     }
                     .buttonStyle(PlainButtonStyle())
                 }
