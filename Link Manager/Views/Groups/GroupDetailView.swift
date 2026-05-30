@@ -133,11 +133,8 @@ struct GroupDetailView: View {
                         }
                     } label: {
                         Image(systemName: "xmark")
-                            .font(.system(size: 16, weight: .semibold))
+                            .font(.system(size: 16, weight: .bold))
                             .foregroundStyle(.primary)
-                            .frame(width: 36, height: 36)
-                            .background(Color(UIColor.tertiarySystemFill))
-                            .clipShape(Circle())
                     }
                 }
             } else {
@@ -434,47 +431,33 @@ struct GroupDetailView: View {
     var selectionActionBar: some View {
         let allSelected = !links.isEmpty && selectedLinkIds.count == links.count
         return HStack(spacing: 12) {
-            groupSelectionPillButton(icon: "trash.fill", label: "Delete", tint: .red, disabled: selectedLinkIds.isEmpty) {
-                deleteSelectedLinks()
-            }
-            groupSelectionPillButton(icon: "folder.fill", label: "Move", tint: .blue, disabled: selectedLinkIds.isEmpty) {
-                showingAddToOtherGroupSheet = true
-            }
-            groupSelectionPillButton(
-                icon: allSelected ? "checkmark.circle.fill" : "circle",
-                label: "All",
-                tint: allSelected ? .blue : .primary,
-                disabled: false
-            ) {
+            Button("Delete") { deleteSelectedLinks() }
+                .font(.subheadline.weight(.semibold))
+                .foregroundStyle(selectedLinkIds.isEmpty ? Color.secondary : .red)
+                .frame(maxWidth: .infinity, minHeight: 50)
+                .background(.ultraThinMaterial, in: Capsule())
+                .disabled(selectedLinkIds.isEmpty)
+
+            Button("Move") { showingAddToOtherGroupSheet = true }
+                .font(.subheadline.weight(.semibold))
+                .foregroundStyle(selectedLinkIds.isEmpty ? Color.secondary : .blue)
+                .frame(maxWidth: .infinity, minHeight: 50)
+                .background(.ultraThinMaterial, in: Capsule())
+                .disabled(selectedLinkIds.isEmpty)
+
+            Button(allSelected ? "None" : "All") {
                 let allIDs = Set(links.map { $0.objectID })
                 withAnimation { selectedLinkIds = allSelected ? [] : allIDs }
             }
+            .font(.subheadline.weight(.semibold))
+            .foregroundStyle(allSelected ? Color.blue : Color.primary)
+            .frame(maxWidth: .infinity, minHeight: 50)
+            .background(.ultraThinMaterial, in: Capsule())
         }
         .padding(.horizontal, 16)
         .padding(.vertical, 12)
         .padding(.bottom, 8)
         .transition(.move(edge: .bottom).combined(with: .opacity))
-    }
-
-    private func groupSelectionPillButton(
-        icon: String, label: String, tint: Color, disabled: Bool, action: @escaping () -> Void
-    ) -> some View {
-        Button(action: action) {
-            VStack(spacing: 5) {
-                Image(systemName: icon)
-                    .font(.system(size: 22, weight: .semibold))
-                Text(label)
-                    .font(.caption)
-                    .fontWeight(.semibold)
-            }
-            .foregroundStyle(tint.opacity(disabled ? 0.3 : 1.0))
-            .frame(maxWidth: .infinity)
-            .frame(height: 66)
-            .background(.ultraThinMaterial)
-            .clipShape(RoundedRectangle(cornerRadius: 18, style: .continuous))
-            .shadow(color: .black.opacity(0.12), radius: 8, x: 0, y: 2)
-        }
-        .disabled(disabled)
     }
 
     func deleteSelectedLinks() {

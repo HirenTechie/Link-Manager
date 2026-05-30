@@ -49,7 +49,7 @@ struct HomeView: View {
             Tab("", systemImage: "plus", value: AppTab.add, role: .search) {
                 GroupListView(linkViewModel: viewModel, groupViewModel: groupViewModel)
             }
-            .tabPlacement(.)
+            
             
         }
         
@@ -537,14 +537,9 @@ struct HomeContentView: View {
         if isSelectionMode {
             VStack {
                 Spacer()
+                let allSelected = !displayedContents.isEmpty && selectedLinkIDs.count == displayedContents.count
                 HStack(spacing: 12) {
-                    // Delete
-                    selectionPillButton(
-                        icon: "trash.fill",
-                        label: "Delete",
-                        tint: .red,
-                        disabled: selectedLinkIDs.isEmpty
-                    ) {
+                    Button("Delete") {
                         let toDelete = displayedContents.filter { content in
                             content.id.map { selectedLinkIDs.contains($0) } ?? false
                         }
@@ -555,28 +550,27 @@ struct HomeContentView: View {
                             selectedLinkIDs.removeAll()
                         }
                     }
+                    .font(.subheadline.weight(.semibold))
+                    .foregroundStyle(selectedLinkIDs.isEmpty ? Color.secondary : .red)
+                    .frame(maxWidth: .infinity, minHeight: 50)
+                    .background(.ultraThinMaterial, in: Capsule())
+                    .disabled(selectedLinkIDs.isEmpty)
 
-                    // Move to Group
-                    selectionPillButton(
-                        icon: "folder.fill",
-                        label: "Move",
-                        tint: .blue,
-                        disabled: selectedLinkIDs.isEmpty
-                    ) {
-                        showingAddToGroupSheet = true
-                    }
+                    Button("Move") { showingAddToGroupSheet = true }
+                        .font(.subheadline.weight(.semibold))
+                        .foregroundStyle(selectedLinkIDs.isEmpty ? Color.secondary : .blue)
+                        .frame(maxWidth: .infinity, minHeight: 50)
+                        .background(.ultraThinMaterial, in: Capsule())
+                        .disabled(selectedLinkIDs.isEmpty)
 
-                    // Select All / Deselect All
-                    let allSelected = selectedLinkIDs.count == displayedContents.count && !displayedContents.isEmpty
-                    selectionPillButton(
-                        icon: allSelected ? "checkmark.circle.fill" : "circle",
-                        label: "All",
-                        tint: allSelected ? .blue : .primary,
-                        disabled: false
-                    ) {
+                    Button(allSelected ? "None" : "All") {
                         let allIDs = Set(displayedContents.compactMap { $0.id })
                         withAnimation { selectedLinkIDs = allSelected ? [] : allIDs }
                     }
+                    .font(.subheadline.weight(.semibold))
+                    .foregroundStyle(allSelected ? Color.blue : Color.primary)
+                    .frame(maxWidth: .infinity, minHeight: 50)
+                    .background(.ultraThinMaterial, in: Capsule())
                 }
                 .padding(.horizontal, 16)
                 .padding(.bottom, 28)
@@ -585,31 +579,6 @@ struct HomeContentView: View {
             .animation(.spring(response: 0.35, dampingFraction: 0.8), value: isSelectionMode)
             .zIndex(2)
         }
-    }
-
-    private func selectionPillButton(
-        icon: String,
-        label: String,
-        tint: Color,
-        disabled: Bool,
-        action: @escaping () -> Void
-    ) -> some View {
-        Button(action: action) {
-            VStack(spacing: 5) {
-                Image(systemName: icon)
-                    .font(.system(size: 22, weight: .semibold))
-                Text(label)
-                    .font(.caption)
-                    .fontWeight(.semibold)
-            }
-            .foregroundStyle(tint.opacity(disabled ? 0.3 : 1.0))
-            .frame(maxWidth: .infinity)
-            .frame(height: 66)
-            .background(.ultraThinMaterial)
-            .clipShape(RoundedRectangle(cornerRadius: 18, style: .continuous))
-            .shadow(color: .black.opacity(0.12), radius: 8, x: 0, y: 2)
-        }
-        .disabled(disabled)
     }
 
     @ViewBuilder
