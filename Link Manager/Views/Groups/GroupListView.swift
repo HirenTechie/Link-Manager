@@ -3,8 +3,8 @@ import SwiftUI
 import UIKit
 
 struct GroupListView: View {
-    @StateObject private var groupViewModel: LinkGroupViewModel
-    @ObservedObject var linkViewModel: LinkViewModel  // Passed to detail view
+    @ObservedObject var groupViewModel: LinkGroupViewModel
+    @ObservedObject var linkViewModel: LinkViewModel
     @State private var showingAddGroupAlert = false
     @State private var newGroupName = ""
     @State private var selectedGroup: LinkGroup?
@@ -53,11 +53,9 @@ struct GroupListView: View {
         }
     }
 
-    init(linkViewModel: LinkViewModel) {
+    init(linkViewModel: LinkViewModel, groupViewModel: LinkGroupViewModel) {
         self.linkViewModel = linkViewModel
-        _groupViewModel = StateObject(
-            wrappedValue: LinkGroupViewModel(
-                context: PersistenceController.shared.container.viewContext))
+        self.groupViewModel = groupViewModel
     }
 
     var body: some View {

@@ -28,19 +28,19 @@ struct HomeView: View {
 
     var body: some View {
         TabView(selection: $selectedTab) {
-            HomeContentView(viewModel: viewModel, showFavoritesOnly: false)
+            HomeContentView(viewModel: viewModel, groupViewModel: groupViewModel, showFavoritesOnly: false)
                 .tabItem {
                     Label("Home", systemImage: "link")
                 }
                 .tag(Tab.home)
 
-            GroupListView(linkViewModel: viewModel)
+            GroupListView(linkViewModel: viewModel, groupViewModel: groupViewModel)
                 .tabItem {
                     Label("Groups", systemImage: "folder.fill")
                 }
                 .tag(Tab.groups)
 
-            HomeContentView(viewModel: viewModel, showFavoritesOnly: true)
+            HomeContentView(viewModel: viewModel, groupViewModel: groupViewModel, showFavoritesOnly: true)
                 .tabItem {
                     Label("Favorites", systemImage: "heart.fill")
                 }
@@ -50,22 +50,14 @@ struct HomeView: View {
     }
 }
 
-enum Tab {
-    case home
-    case groups
-    case favorites
-}
-
 struct HomeContentView: View {
     @ObservedObject var viewModel: LinkViewModel
+    @ObservedObject var groupViewModel: LinkGroupViewModel
     var showFavoritesOnly: Bool
 
     @Environment(\.managedObjectContext) private var viewContext
     @Environment(\.scenePhase) var scenePhase
 
-    // Group Support
-    @StateObject private var groupViewModel = LinkGroupViewModel(
-        context: PersistenceController.shared.container.viewContext)
     @State private var showingAddToGroupSheet = false
 
     @State private var selectedCategory: Category?

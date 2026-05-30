@@ -122,10 +122,6 @@ class LinkGroupViewModel: ObservableObject {
     }
 
     private func saveContext() {
-        do {
-            try context.save()
-        } catch {
-            print("Error saving context in GroupViewModel: \(error)")
-        }
+        PersistenceController.shared.save(context: context)
     }
 }

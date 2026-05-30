@@ -320,27 +320,30 @@ class LinkViewModel: ObservableObject {
     }
 
     private func saveContext() {
-        do {
-            try context.save()
-        } catch {
-            print("Error saving context: \(error)")
-        }
+        PersistenceController.shared.save(context: context)
     }
 
     private func saveImageToDisk(data: Data, name: String) -> String? {
-        // Save to App Group container so Share Extension can read it
-        if let containerURL = FileManager.default.containerURL(
+        ImageStorageService.shared.save(data: data, name: name)
+    }
+}
+
+final class ImageStorageService {
+    static let shared = ImageStorageService()
+    private init() {}
+
+    func save(data: Data, name: String) -> String? {
+        guard let containerURL = FileManager.default.containerURL(
             forSecurityApplicationGroupIdentifier: PersistenceController.appGroupIdentifier)
-        {
-            let fileURL = containerURL.appendingPathComponent(name + ".png")
-            do {
-                try data.write(to: fileURL)
-                return fileURL.absoluteString
-            } catch {
-                print("Error saving image: \(error)")
-                return nil
-            }
+        else { return nil }
+
+        let fileURL = containerURL.appendingPathComponent(name + ".png")
+        do {
+            try data.write(to: fileURL)
+            return fileURL.absoluteString
+        } catch {
+            print("ImageStorageService: failed to save \(name) — \(error)")
+            return nil
         }
-        return nil
     }
 }

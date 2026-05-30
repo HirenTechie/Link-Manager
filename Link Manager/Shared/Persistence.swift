@@ -43,4 +43,13 @@ class PersistenceController {
         container.viewContext.automaticallyMergesChangesFromParent = true
         container.viewContext.mergePolicy = NSMergeByPropertyObjectTrumpMergePolicy
     }
+
+    func save(context: NSManagedObjectContext) {
+        guard context.hasChanges else { return }
+        do {
+            try context.save()
+        } catch {
+            print("CoreData save failed: \(error)")
+        }
+    }
 }
