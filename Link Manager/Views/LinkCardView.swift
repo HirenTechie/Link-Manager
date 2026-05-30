@@ -17,6 +17,14 @@ struct LinkCardView: View {
 
     var body: some View {
         HStack(alignment: .center, spacing: 14) {
+            if isSelectionMode {
+                Image(systemName: isSelected ? "checkmark.circle.fill" : "circle")
+                    .font(.system(size: 22, weight: .semibold))
+                    .foregroundStyle(isSelected ? Color.blue : Color.secondary)
+                    .animation(.easeInOut(duration: 0.15), value: isSelected)
+                    .transition(.scale.combined(with: .opacity))
+            }
+
             thumbnailView
 
             contentView
@@ -40,36 +48,19 @@ struct LinkCardView: View {
 
     @ViewBuilder
     private var thumbnailView: some View {
-        ZStack(alignment: .bottomTrailing) {
-            Group {
-                if let thumbUrl = content.thumbIconUrl, let url = URL(string: thumbUrl) {
-                    KFImage(url)
-                        .resizable()
-                        .placeholder { circlePlaceholder }
-                        .fade(duration: 0.2)
-                        .aspectRatio(contentMode: .fill)
-                } else {
-                    circlePlaceholder
-                }
-            }
-            .frame(width: 52, height: 52)
-            .clipShape(Circle())
-
-            if isSelectionMode {
-                Image(systemName: isSelected ? "checkmark.circle.fill" : "circle")
-                    .font(.system(size: 18, weight: .semibold))
-                    .foregroundStyle(isSelected ? .white : .secondary)
-                    .background(
-                        Circle()
-                            .fill(isSelected ? Color.blue : Color(uiColor: .systemBackground))
-                            .frame(width: 20, height: 20)
-                    )
-                    .offset(x: 3, y: 3)
-                    .transition(.scale.combined(with: .opacity))
+        Group {
+            if let thumbUrl = content.thumbIconUrl, let url = URL(string: thumbUrl) {
+                KFImage(url)
+                    .resizable()
+                    .placeholder { circlePlaceholder }
+                    .fade(duration: 0.2)
+                    .aspectRatio(contentMode: .fill)
+            } else {
+                circlePlaceholder
             }
         }
-        .animation(.easeInOut(duration: 0.2), value: isSelectionMode)
-        .animation(.easeInOut(duration: 0.15), value: isSelected)
+        .frame(width: 52, height: 52)
+        .clipShape(Circle())
     }
 
     private var circlePlaceholder: some View {
