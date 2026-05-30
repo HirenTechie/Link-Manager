@@ -83,13 +83,10 @@ struct GroupDetailView: View {
             if links.isEmpty {
                 emptyState
             } else {
-                ScrollView {
-                    // Category Filter
+                VStack(spacing: 0) {
                     categoryListView
                         .padding(.vertical, 8)
-
                     linkListView
-                        .padding(.top)
                 }
             }
 
@@ -301,7 +298,7 @@ struct GroupDetailView: View {
 
     @ViewBuilder
     private var linkListView: some View {
-        LazyVStack(spacing: 12) {
+        List {
             ForEach(links) { content in
                 LinkCardView(
                     content: content,
@@ -318,9 +315,7 @@ struct GroupDetailView: View {
                                 group: group, links: [content])
                         }
                     },
-                    onShare: {
-                        // Share logic
-                    },
+                    onShare: {},
                     onTap: {
                         if isSelectionMode {
                             if selectedLinkIds.contains(content.objectID) {
@@ -343,96 +338,104 @@ struct GroupDetailView: View {
                         ? selectedLinkIds.contains(content.objectID) : false,
                     showAddToGroupButton: false
                 )
-                .padding(.horizontal)
+                .listRowBackground(Color.clear)
+                .listRowInsets(EdgeInsets())
+                .listRowSeparatorTint(Color.primary.opacity(0.08))
             }
         }
+        .listStyle(.plain)
     }
 
     // MARK: - Subviews
 
     @ViewBuilder
     private var categoryListView: some View {
-        ScrollView(.horizontal, showsIndicators: false) {
-            HStack(spacing: 10) {
-                // "All" Category
-                Button(action: {
-                    withAnimation(.spring(response: 0.3, dampingFraction: 0.7)) {
-                        selectedCategory = nil
-                    }
-                }) {
-                    Text("All")
-                        .font(.system(.subheadline, design: .default))
-                        .fontWeight(.medium)
-                        .padding(.vertical, 8)
-                        .padding(.horizontal, 16)
-                        .background(
-                            selectedCategory == nil
-                                ? Color.primary : Color(UIColor.secondarySystemGroupedBackground)
-                        )
-                        .foregroundStyle(
-                            selectedCategory == nil ? Color(UIColor.systemBackground) : .primary
-                        )
-                        .clipShape(Capsule())
-                        .shadow(color: Color.black.opacity(0.05), radius: 2, x: 0, y: 1)
-                }
-
-                // Filter categories to only those presnet in the group
-                let groupCategoryIDs = Set(links.compactMap { $0.category?.objectID })
-                let distinctCategories = linkViewModel.categories.filter {
-                    groupCategoryIDs.contains($0.objectID)
-                }
-
-                ForEach(distinctCategories) { category in
+        ScrollViewReader { proxy in
+            ScrollView(.horizontal, showsIndicators: false) {
+                HStack(spacing: 10) {
+                    // "All" pill
                     Button(action: {
                         withAnimation(.spring(response: 0.3, dampingFraction: 0.7)) {
-                            selectedCategory = category
+                            selectedCategory = nil
                         }
+                        withAnimation { proxy.scrollTo("all", anchor: .center) }
                     }) {
-                        HStack(spacing: 6) {
-                            if let iconUrl = category.thumbIcon, let url = URL(string: iconUrl) {
-                                KFImage(url)
-                                    .resizable()
-                                    .placeholder {
-                                        // Placeholder for category icon, 'content' is not available here.
-                                        // Using a default globe icon as a fallback.
-                                        Image(systemName: "globe").font(.system(size: 10))
-                                            .foregroundColor(
-                                                selectedCategory == category
-                                                    ? Color(UIColor.systemBackground).opacity(0.8)
-                                                    : .secondary)
-                                    }
-                                    .fade(duration: 0.25)
-                                    .aspectRatio(contentMode: .fill)
-                                    .frame(width: 16, height: 16)  // Reverted to original frame size
-                                    .clipShape(RoundedRectangle(cornerRadius: 4))  // Adjusted clipShape for 16x16
-                            } else {
-                                Text(String(category.name?.prefix(1) ?? "#").uppercased())
-                                    .font(.caption2.bold())
-                                    .foregroundColor(
-                                        selectedCategory == category
-                                            ? Color(UIColor.systemBackground) : .secondary)
-                            }
+                        Text("All")
+                            .font(.system(.subheadline, design: .default))
+                            .fontWeight(.medium)
+                            .padding(.vertical, 8)
+                            .padding(.horizontal, 16)
+                            .background(
+                                selectedCategory == nil
+                                    ? Color.primary : Color(UIColor.secondarySystemGroupedBackground)
+                            )
+                            .foregroundStyle(
+                                selectedCategory == nil ? Color(UIColor.systemBackground) : .primary
+                            )
+                            .clipShape(Capsule())
+                            .shadow(color: Color.black.opacity(0.05), radius: 2, x: 0, y: 1)
+                    }
+                    .id("all")
 
-                            Text(category.name ?? "Unknown")
-                                .font(.system(.subheadline, design: .default))
-                                .fontWeight(.medium)
+                    // Categories from ALL group links (not filtered)
+                    let allGroupLinks = group.links?.allObjects as? [Content] ?? []
+                    let groupCategoryIDs = Set(allGroupLinks.compactMap { $0.category?.objectID })
+                    let distinctCategories = linkViewModel.categories.filter {
+                        groupCategoryIDs.contains($0.objectID)
+                    }
+
+                    ForEach(distinctCategories) { category in
+                        Button(action: {
+                            withAnimation(.spring(response: 0.3, dampingFraction: 0.7)) {
+                                selectedCategory = category
+                            }
+                            withAnimation { proxy.scrollTo(category.objectID, anchor: .center) }
+                        }) {
+                            HStack(spacing: 6) {
+                                if let iconUrl = category.thumbIcon, let url = URL(string: iconUrl) {
+                                    KFImage(url)
+                                        .resizable()
+                                        .placeholder {
+                                            Image(systemName: "globe").font(.system(size: 10))
+                                                .foregroundColor(
+                                                    selectedCategory == category
+                                                        ? Color(UIColor.systemBackground).opacity(0.8)
+                                                        : .secondary)
+                                        }
+                                        .fade(duration: 0.25)
+                                        .aspectRatio(contentMode: .fill)
+                                        .frame(width: 16, height: 16)
+                                        .clipShape(RoundedRectangle(cornerRadius: 4))
+                                } else {
+                                    Text(String(category.name?.prefix(1) ?? "#").uppercased())
+                                        .font(.caption2.bold())
+                                        .foregroundColor(
+                                            selectedCategory == category
+                                                ? Color(UIColor.systemBackground) : .secondary)
+                                }
+
+                                Text(category.name ?? "Unknown")
+                                    .font(.system(.subheadline, design: .default))
+                                    .fontWeight(.medium)
+                            }
+                            .padding(.vertical, 8)
+                            .padding(.horizontal, 14)
+                            .background(
+                                selectedCategory == category
+                                    ? Color.primary : Color(UIColor.secondarySystemGroupedBackground)
+                            )
+                            .foregroundStyle(
+                                selectedCategory == category
+                                    ? Color(UIColor.systemBackground) : .primary
+                            )
+                            .clipShape(Capsule())
+                            .shadow(color: Color.black.opacity(0.05), radius: 2, x: 0, y: 1)
                         }
-                        .padding(.vertical, 8)
-                        .padding(.horizontal, 14)
-                        .background(
-                            selectedCategory == category
-                                ? Color.primary : Color(UIColor.secondarySystemGroupedBackground)
-                        )
-                        .foregroundStyle(
-                            selectedCategory == category
-                                ? Color(UIColor.systemBackground) : .primary
-                        )
-                        .clipShape(Capsule())
-                        .shadow(color: Color.black.opacity(0.05), radius: 2, x: 0, y: 1)
+                        .id(category.objectID)
                     }
                 }
+                .padding(.horizontal)
             }
-            .padding(.horizontal)
         }
     }
 
