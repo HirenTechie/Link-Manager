@@ -11,7 +11,7 @@ struct HomeView: View {
     @State private var selectedTab: AppTab = .home
 
     enum AppTab: Hashable {
-        case home, groups, favorites
+        case home, groups, favorites, add
     }
 
     init() {
@@ -46,71 +46,11 @@ struct HomeView: View {
                 )
             }
 
-            Tab(role: .search) {
-                SearchTabView(viewModel: viewModel)
+            Tab("", systemImage: "plus", value: AppTab.add) {
+                GroupListView(linkViewModel: viewModel, groupViewModel: groupViewModel)
             }
         }
         .tint(.blue)
-    }
-}
-
-// MARK: - Search Tab
-
-struct SearchTabView: View {
-    @ObservedObject var viewModel: LinkViewModel
-    @State private var searchText = ""
-    @State private var selectedContent: Content?
-
-    @FetchRequest(
-        sortDescriptors: [NSSortDescriptor(keyPath: \Content.creationDate, ascending: false)],
-        animation: .default
-    ) private var allContents: FetchedResults<Content>
-
-    var searchResults: [Content] {
-        guard !searchText.isEmpty else { return Array(allContents) }
-        return allContents.filter {
-            ($0.title?.localizedCaseInsensitiveContains(searchText) ?? false)
-            || ($0.savedLinkUrl?.localizedCaseInsensitiveContains(searchText) ?? false)
-            || ($0.category?.name?.localizedCaseInsensitiveContains(searchText) ?? false)
-        }
-    }
-
-    var body: some View {
-        NavigationStack {
-            List {
-                ForEach(searchResults) { content in
-                    LinkCardView(
-                        content: content,
-                        onToggleFavorite: { viewModel.toggleFavorite(content) },
-                        onAddToGroup: {},
-                        onDelete: { viewModel.deleteLink(content) },
-                        onShare: { shareLink(content) },
-                        onTap: { selectedContent = content },
-                        isSelectionMode: false,
-                        isSelected: false,
-                        showAddToGroupButton: false
-                    )
-                    .listRowBackground(Color.clear)
-                    .listRowInsets(EdgeInsets())
-                    .listRowSeparatorTint(Color.primary.opacity(0.08))
-                }
-            }
-            .listStyle(.plain)
-            .navigationTitle("Search")
-            .searchable(text: $searchText, prompt: "Search links, titles, categories…")
-            .sheet(item: $selectedContent) { content in
-                LinkDetailView(content: content, viewModel: viewModel)
-            }
-        }
-    }
-
-    private func shareLink(_ content: Content) {
-        guard let urlString = content.savedLinkUrl, let url = URL(string: urlString) else { return }
-        let activityVC = UIActivityViewController(activityItems: [url], applicationActivities: nil)
-        if let windowScene = UIApplication.shared.connectedScenes.first as? UIWindowScene,
-           let rootVC = windowScene.windows.first?.rootViewController {
-            rootVC.present(activityVC, animated: true)
-        }
     }
 }
 
