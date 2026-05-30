@@ -175,8 +175,7 @@ struct GroupDetailView: View {
                     }
                 }
             } else {
-                ToolbarItem(placement: .navigationBarTrailing) {
-                    HStack(spacing: 16) {
+                ToolbarItemGroup(placement: .topBarTrailing) {
                         Button(action: {
                             withAnimation(.easeInOut(duration: 0.2)) { isSelectionMode = true }
                         }) {
@@ -211,9 +210,9 @@ struct GroupDetailView: View {
                                 .foregroundStyle(.primary)
                         }
                     }
-                }
+                ToolbarSpacer(placement: .topBarTrailing)
 
-                ToolbarItem(placement: .navigationBarTrailing) {
+                ToolbarItemGroup(placement: .topBarTrailing) {
                     Menu {
                         Button(action: {
                             newGroupName = group.name ?? ""
@@ -229,8 +228,8 @@ struct GroupDetailView: View {
                         Image(systemName: "ellipsis")
                             .font(.system(size: 16, weight: .semibold))
                             .foregroundStyle(.primary)
-                            .frame(width: 36, height: 36)
-                            .background(Color(UIColor.tertiarySystemFill))
+                            .frame(width: 26, height: 36)
+                          
                             .clipShape(Circle())
                     }
                 }
