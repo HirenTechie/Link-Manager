@@ -78,26 +78,27 @@ struct GroupListView: View {
                             ForEach(filteredGroups) { group in
                                 Group {
                                     if isSelectionMode {
-                                        GroupGridItemView(
-                                            group: group,
-                                            isSelected: selectedGroupIDs.contains(group.objectID),
-                                            isSelectionMode: true,
-                                            onSelect: {
-                                                if selectedGroupIDs.contains(group.objectID) {
-                                                    selectedGroupIDs.remove(group.objectID)
-                                                } else {
-                                                    selectedGroupIDs.insert(group.objectID)
-                                                }
-                                            },
-                                            viewModel: groupViewModel
-                                        )
+                                        Button {
+                                            if selectedGroupIDs.contains(group.objectID) {
+                                                selectedGroupIDs.remove(group.objectID)
+                                            } else {
+                                                selectedGroupIDs.insert(group.objectID)
+                                            }
+                                        } label: {
+                                            GroupGridItemView(
+                                                group: group,
+                                                isSelected: selectedGroupIDs.contains(group.objectID),
+                                                isSelectionMode: true,
+                                                viewModel: groupViewModel
+                                            )
+                                        }
+                                        .buttonStyle(PlainButtonStyle())
                                     } else {
                                         NavigationLink(value: group) {
                                             GroupGridItemView(
                                                 group: group,
                                                 isSelected: false,
                                                 isSelectionMode: false,
-                                                onSelect: {},
                                                 viewModel: groupViewModel
                                             )
                                         }
