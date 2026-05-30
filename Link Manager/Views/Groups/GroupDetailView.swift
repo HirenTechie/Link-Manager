@@ -348,7 +348,6 @@ struct GroupDetailView: View {
                     isSelectionMode: isSelectionMode,
                     isSelected: isSelectionMode
                         ? selectedLinkIds.contains(content.objectID) : false,
-                    deleteIconName: "trash",
                     showAddToGroupButton: false
                 )
                 .padding(.horizontal)
