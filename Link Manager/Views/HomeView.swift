@@ -539,7 +539,7 @@ struct HomeContentView: View {
                 Spacer()
                 let allSelected = !displayedContents.isEmpty && selectedLinkIDs.count == displayedContents.count
                 HStack(spacing: 12) {
-                    Button("Delete") {
+                    Button {
                         let toDelete = displayedContents.filter { content in
                             content.id.map { selectedLinkIDs.contains($0) } ?? false
                         }
@@ -549,31 +549,43 @@ struct HomeContentView: View {
                             isSelectionMode = false
                             selectedLinkIDs.removeAll()
                         }
+                    } label: {
+                        Text("Delete")
+                            .font(.system(size: 15, weight: .semibold))
+                            .foregroundStyle(selectedLinkIDs.isEmpty ? Color.secondary : .red)
+                            .frame(maxWidth: .infinity)
+                            .padding(.vertical, 10)
+                            .background(Color(UIColor.tertiarySystemFill))
+                            .clipShape(Capsule())
                     }
-                    .buttonStyle(.bordered)
-                    .controlSize(.large)
-                    .tint(.red)
-                    .frame(maxWidth: .infinity)
                     .disabled(selectedLinkIDs.isEmpty)
 
-                    Button("Move") { showingAddToGroupSheet = true }
-                        .buttonStyle(.bordered)
-                        .controlSize(.large)
-                        .tint(.blue)
-                        .frame(maxWidth: .infinity)
-                        .disabled(selectedLinkIDs.isEmpty)
+                    Button { showingAddToGroupSheet = true } label: {
+                        Text("Move")
+                            .font(.system(size: 15, weight: .semibold))
+                            .foregroundStyle(selectedLinkIDs.isEmpty ? Color.secondary : .blue)
+                            .frame(maxWidth: .infinity)
+                            .padding(.vertical, 10)
+                            .background(Color(UIColor.tertiarySystemFill))
+                            .clipShape(Capsule())
+                    }
+                    .disabled(selectedLinkIDs.isEmpty)
 
-                    Button(allSelected ? "None" : "All") {
+                    Button {
                         let allIDs = Set(displayedContents.compactMap { $0.id })
                         withAnimation { selectedLinkIDs = allSelected ? [] : allIDs }
+                    } label: {
+                        Text(allSelected ? "None" : "All")
+                            .font(.system(size: 15, weight: .semibold))
+                            .foregroundStyle(allSelected ? Color.blue : Color.primary)
+                            .frame(maxWidth: .infinity)
+                            .padding(.vertical, 10)
+                            .background(Color(UIColor.tertiarySystemFill))
+                            .clipShape(Capsule())
                     }
-                    .buttonStyle(.bordered)
-                    .controlSize(.large)
-                    .tint(allSelected ? .blue : .primary)
-                    .frame(maxWidth: .infinity)
                 }
                 .padding(.horizontal, 16)
-                .padding(.bottom, 28)
+                .padding(.bottom, 0)
             }
             .transition(.move(edge: .bottom).combined(with: .opacity))
             .animation(.spring(response: 0.35, dampingFraction: 0.8), value: isSelectionMode)

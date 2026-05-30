@@ -431,32 +431,44 @@ struct GroupDetailView: View {
     var selectionActionBar: some View {
         let allSelected = !links.isEmpty && selectedLinkIds.count == links.count
         return HStack(spacing: 12) {
-            Button("Delete") { deleteSelectedLinks() }
-                .buttonStyle(.bordered)
-                .controlSize(.large)
-                .tint(.red)
-                .frame(maxWidth: .infinity)
-                .disabled(selectedLinkIds.isEmpty)
+            Button { deleteSelectedLinks() } label: {
+                Text("Delete")
+                    .font(.system(size: 15, weight: .semibold))
+                    .foregroundStyle(selectedLinkIds.isEmpty ? Color.secondary : .red)
+                    .frame(maxWidth: .infinity)
+                    .padding(.vertical, 10)
+                    .background(Color(UIColor.tertiarySystemFill))
+                    .clipShape(Capsule())
+            }
+            .disabled(selectedLinkIds.isEmpty)
 
-            Button("Move") { showingAddToOtherGroupSheet = true }
-                .buttonStyle(.bordered)
-                .controlSize(.large)
-                .tint(.blue)
-                .frame(maxWidth: .infinity)
-                .disabled(selectedLinkIds.isEmpty)
+            Button { showingAddToOtherGroupSheet = true } label: {
+                Text("Move")
+                    .font(.system(size: 15, weight: .semibold))
+                    .foregroundStyle(selectedLinkIds.isEmpty ? Color.secondary : .blue)
+                    .frame(maxWidth: .infinity)
+                    .padding(.vertical, 10)
+                    .background(Color(UIColor.tertiarySystemFill))
+                    .clipShape(Capsule())
+            }
+            .disabled(selectedLinkIds.isEmpty)
 
-            Button(allSelected ? "None" : "All") {
+            Button {
                 let allIDs = Set(links.map { $0.objectID })
                 withAnimation { selectedLinkIds = allSelected ? [] : allIDs }
+            } label: {
+                Text(allSelected ? "None" : "All")
+                    .font(.system(size: 15, weight: .semibold))
+                    .foregroundStyle(allSelected ? Color.blue : Color.primary)
+                    .frame(maxWidth: .infinity)
+                    .padding(.vertical, 10)
+                    .background(Color(UIColor.tertiarySystemFill))
+                    .clipShape(Capsule())
             }
-            .buttonStyle(.bordered)
-            .controlSize(.large)
-            .tint(allSelected ? .blue : .primary)
-            .frame(maxWidth: .infinity)
         }
         .padding(.horizontal, 16)
-        .padding(.vertical, 12)
-        .padding(.bottom, 8)
+        .padding(.vertical, 0)
+        .padding(.bottom, 0)
         .transition(.move(edge: .bottom).combined(with: .opacity))
     }
 
