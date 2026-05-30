@@ -83,11 +83,7 @@ struct GroupDetailView: View {
             if links.isEmpty {
                 emptyState
             } else {
-                VStack(spacing: 0) {
-                    categoryListView
-                        .padding(.vertical, 8)
-                    linkListView
-                }
+                linkListView
             }
 
             // FAB — bottom left, circle + button
@@ -299,6 +295,12 @@ struct GroupDetailView: View {
     @ViewBuilder
     private var linkListView: some View {
         List {
+            categoryListView
+                .listRowBackground(Color.clear)
+                .listRowInsets(EdgeInsets())
+                .listRowSeparator(.hidden)
+                .padding(.vertical, 8)
+
             ForEach(links) { content in
                 LinkCardView(
                     content: content,
