@@ -494,3 +494,48 @@ struct GroupDetailView: View {
         }
     }
 }
+
+// MARK: - Preview
+
+#Preview("GroupDetailView") {
+    let controller = PersistenceController(inMemory: true)
+    let ctx = controller.container.viewContext
+
+    let category = Category(context: ctx)
+    category.id = UUID()
+    category.name = "YouTube"
+
+    let group = LinkGroup(context: ctx)
+    group.id = UUID()
+    group.name = "YouTube"
+    group.creationDate = Date()
+
+    let mockLinks: [(String, String)] = [
+        ("Shadow Studio 9 on Instagram", "https://www.instagram.com/reel/DYkFruwFK"),
+        ("Belle Therapy on Instagram", "https://www.instagram.com/reel/DYIclmEhs"),
+        ("Free GPT Image 2 & More", "https://www.meigen.ai/?utm_source=sp_auto"),
+        ("Same Bedroom But Different", "https://youtube.com/shorts/HwqRIFnjEto"),
+        ("Here's how to get a great deal", "https://youtube.com/shorts/xcgtMi9uu-4"),
+    ]
+
+    for (title, url) in mockLinks {
+        let content = Content(context: ctx)
+        content.id = UUID()
+        content.title = title
+        content.savedLinkUrl = url
+        content.creationDate = Date()
+        content.domainName = "YouTube"
+        content.category = category
+        group.addToLinks(content)
+    }
+
+    try? ctx.save()
+
+    let linkVM = LinkViewModel(context: ctx)
+    let groupVM = LinkGroupViewModel(context: ctx)
+
+    return NavigationStack {
+        GroupDetailView(group: group, groupViewModel: groupVM, linkViewModel: linkVM)
+    }
+    .environment(\.managedObjectContext, ctx)
+}
