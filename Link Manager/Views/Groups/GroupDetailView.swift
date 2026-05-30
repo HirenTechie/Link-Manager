@@ -145,7 +145,7 @@ struct GroupDetailView: View {
                         Text("Delete")
                             .font(.system(size: 15, weight: .semibold))
                             .foregroundStyle(selectedLinkIds.isEmpty ? Color.secondary : .red)
-                            .padding(.horizontal, 20)
+                            .padding(.horizontal, 10)
                             .padding(.vertical, 10)
                     }
                     .disabled(selectedLinkIds.isEmpty)
@@ -156,7 +156,7 @@ struct GroupDetailView: View {
                         Text("Move")
                             .font(.system(size: 15, weight: .semibold))
                             .foregroundStyle(selectedLinkIds.isEmpty ? Color.secondary : .blue)
-                            .padding(.horizontal, 20)
+                            .padding(.horizontal, 10)
                             .padding(.vertical, 10)
                     }
                     .disabled(selectedLinkIds.isEmpty)
@@ -170,44 +170,19 @@ struct GroupDetailView: View {
                         Text(allSelected ? "None" : "All")
                             .font(.system(size: 15, weight: .semibold))
                             .foregroundStyle(allSelected ? Color.blue : Color.primary)
-                            .padding(.horizontal, 20)
+                            .padding(.horizontal, 10)
                             .padding(.vertical, 10)
                     }
                 }
             } else {
                 ToolbarItem(placement: .navigationBarTrailing) {
-                    HStack(spacing: 12) {
-                        Menu {
-                            Button(action: {
-                                newGroupName = group.name ?? ""
-                                showingRenameGroupAlert = true
-                            }) {
-                                Label("Rename Group", systemImage: "pencil")
-                            }
-                            Divider()
-                            Button(role: .destructive, action: { showingDeleteGroupConfirmation = true }) {
-                                Label("Delete Group", systemImage: "trash")
-                            }
-                        } label: {
-                            Image(systemName: "ellipsis")
-                                .font(.system(size: 16, weight: .semibold))
-                                .foregroundStyle(.primary)
-                                .frame(width: 36, height: 36)
-                                .background(Color(UIColor.tertiarySystemFill))
-                                .clipShape(Circle())
-                        }
-
+                    HStack(spacing: 16) {
                         Button(action: {
-                            withAnimation(.easeInOut(duration: 0.2)) {
-                                isSelectionMode = true
-                            }
+                            withAnimation(.easeInOut(duration: 0.2)) { isSelectionMode = true }
                         }) {
                             Image(systemName: "checklist")
                                 .font(.system(size: 16, weight: .semibold))
                                 .foregroundStyle(.primary)
-                                .frame(width: 36, height: 36)
-                                .background(Color(UIColor.tertiarySystemFill))
-                                .clipShape(Circle())
                         }
 
                         Menu {
@@ -234,9 +209,23 @@ struct GroupDetailView: View {
                             Image(systemName: "arrow.up.arrow.down")
                                 .font(.system(size: 16, weight: .semibold))
                                 .foregroundStyle(.primary)
-                                .frame(width: 36, height: 36)
-                                .background(Color(UIColor.tertiarySystemFill))
-                                .clipShape(Circle())
+                        }
+
+                        Menu {
+                            Button(action: {
+                                newGroupName = group.name ?? ""
+                                showingRenameGroupAlert = true
+                            }) {
+                                Label("Rename Group", systemImage: "pencil")
+                            }
+                            Divider()
+                            Button(role: .destructive, action: { showingDeleteGroupConfirmation = true }) {
+                                Label("Delete Group", systemImage: "trash")
+                            }
+                        } label: {
+                            Image(systemName: "ellipsis")
+                                .font(.system(size: 16, weight: .semibold))
+                                .foregroundStyle(.primary)
                         }
                     }
                 }
