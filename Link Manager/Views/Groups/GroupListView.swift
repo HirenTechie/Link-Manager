@@ -8,7 +8,6 @@ struct GroupListView: View {
     @EnvironmentObject var appState: AppState
     @State private var showingAddGroupAlert = false
     @State private var newGroupName = ""
-    @State private var selectedGroup: LinkGroup?
     @State private var searchText = ""
 
     @State private var isSelectionMode = false
@@ -77,29 +76,34 @@ struct GroupListView: View {
                     ScrollView {
                         LazyVGrid(columns: columns, spacing: 20) {
                             ForEach(filteredGroups) { group in
-                                GroupGridItemView(
-                                    group: group,
-                                    isSelected: selectedGroupIDs.contains(group.objectID),
-                                    isSelectionMode: isSelectionMode,
-                                    onSelect: {
-                                        if isSelectionMode {
-                                            if selectedGroupIDs.contains(group.objectID) {
-                                                selectedGroupIDs.remove(group.objectID)
-                                            } else {
-                                                selectedGroupIDs.insert(group.objectID)
-                                            }
-                                        } else {
-                                            selectedGroup = group
+                                Group {
+                                    if isSelectionMode {
+                                        GroupGridItemView(
+                                            group: group,
+                                            isSelected: selectedGroupIDs.contains(group.objectID),
+                                            isSelectionMode: true,
+                                            onSelect: {
+                                                if selectedGroupIDs.contains(group.objectID) {
+                                                    selectedGroupIDs.remove(group.objectID)
+                                                } else {
+                                                    selectedGroupIDs.insert(group.objectID)
+                                                }
+                                            },
+                                            viewModel: groupViewModel
+                                        )
+                                    } else {
+                                        NavigationLink(value: group) {
+                                            GroupGridItemView(
+                                                group: group,
+                                                isSelected: false,
+                                                isSelectionMode: false,
+                                                onSelect: {},
+                                                viewModel: groupViewModel
+                                            )
                                         }
-                                    },
-                                    viewModel: groupViewModel,  // Pass VM for logic
-                                    destination: GroupDetailView(
-                                        group: group,
-                                        groupViewModel: groupViewModel,
-                                        linkViewModel: linkViewModel
-                                    ),
-                                    selectionBinding: $selectedGroup
-                                )
+                                        .buttonStyle(PlainButtonStyle())
+                                    }
+                                }
                                 .contextMenu {
                                     if !isSelectionMode {
                                         Button(role: .destructive) {
@@ -133,6 +137,9 @@ struct GroupListView: View {
                 if isSelectionMode {
                     selectionToolbar
                 }
+            }
+            .navigationDestination(for: LinkGroup.self) { group in
+                GroupDetailView(group: group, groupViewModel: groupViewModel, linkViewModel: linkViewModel)
             }
             .toolbar(.hidden, for: .navigationBar)
         .onChange(of: appState.showAddGroupAlert) { show in

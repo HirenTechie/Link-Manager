@@ -79,16 +79,7 @@ struct GroupDetailView: View {
     }
 
     var body: some View {
-        ZStack {
-            Color(UIColor.systemGroupedBackground).ignoresSafeArea()
-
-            if links.isEmpty {
-                emptyState
-            } else {
-                linkListView
-            }
-
-        }
+        linkListView
         .navigationTitle(
             isSelectionMode
                 ? (selectedLinkIds.isEmpty ? "Select Items" : "\(selectedLinkIds.count) Selected")
@@ -288,11 +279,13 @@ struct GroupDetailView: View {
     @ViewBuilder
     private var linkListView: some View {
         List {
-            categoryListView
-                .listRowBackground(Color.clear)
-                .listRowInsets(EdgeInsets())
-                .listRowSeparator(.hidden)
-                .padding(.vertical, 8)
+            if !links.isEmpty {
+                categoryListView
+                    .listRowBackground(Color.clear)
+                    .listRowInsets(EdgeInsets())
+                    .listRowSeparator(.hidden)
+                    .padding(.vertical, 8)
+            }
 
             ForEach(links) { content in
                 LinkCardView(
@@ -340,6 +333,11 @@ struct GroupDetailView: View {
             }
         }
         .listStyle(.plain)
+        .scrollContentBackground(.hidden)
+        .background(Color(UIColor.systemGroupedBackground).ignoresSafeArea())
+        .overlay {
+            if links.isEmpty { emptyState }
+        }
     }
 
     // MARK: - Subviews
