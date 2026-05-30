@@ -147,8 +147,7 @@ struct GroupDetailView: View {
                             .foregroundStyle(selectedLinkIds.isEmpty ? Color.secondary : .red)
                             .padding(.horizontal, 20)
                             .padding(.vertical, 10)
-                            .background(Color(UIColor.tertiarySystemFill))
-                            .clipShape(Capsule())
+                            .background(Color(UIColor.tertiarySystemFill), in: Capsule())
                     }
                     .disabled(selectedLinkIds.isEmpty)
 
@@ -160,8 +159,7 @@ struct GroupDetailView: View {
                             .foregroundStyle(selectedLinkIds.isEmpty ? Color.secondary : .blue)
                             .padding(.horizontal, 20)
                             .padding(.vertical, 10)
-                            .background(Color(UIColor.tertiarySystemFill))
-                            .clipShape(Capsule())
+                            .background(Color(UIColor.tertiarySystemFill), in: Capsule())
                     }
                     .disabled(selectedLinkIds.isEmpty)
 
@@ -176,8 +174,7 @@ struct GroupDetailView: View {
                             .foregroundStyle(allSelected ? Color.blue : Color.primary)
                             .padding(.horizontal, 20)
                             .padding(.vertical, 10)
-                            .background(Color(UIColor.tertiarySystemFill))
-                            .clipShape(Capsule())
+                            .background(Color(UIColor.tertiarySystemFill), in: Capsule())
                     }
                 }
             } else {
