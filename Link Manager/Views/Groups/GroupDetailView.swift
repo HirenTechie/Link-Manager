@@ -93,63 +93,31 @@ struct GroupDetailView: View {
                 }
             }
 
-            // Floating Action Button
-            // Floating Add Bar (Replaces FAB + Icon)
+            // FAB — bottom left, circle + button
             if !isSelectionMode {
                 VStack {
                     Spacer()
-                    HStack(spacing: 12) {
-                        // Create New Link Button
-                        Button(action: {
-                            showingPasteLinkSheet = true
-                        }) {
-                            VStack(spacing: 4) {
-                                Image(systemName: "link.badge.plus")
-                                    .font(.system(size: 20))
-                                Text("New Link")
-                                    .font(.caption2)
-                                    .fontWeight(.bold)
-                            }
-                            .foregroundColor(.white)
-                            .frame(maxWidth: .infinity)
-                            .frame(height: 56)
-                            .background(Color.blue)
-                            .clipShape(RoundedRectangle(cornerRadius: 16))
+                    HStack {
+                        Button(action: { showingPasteLinkSheet = true }) {
+                            Image(systemName: "plus")
+                                .font(.system(size: 24, weight: .bold))
+                                .foregroundColor(.white)
+                                .frame(width: 60, height: 60)
+                                .background(Color.blue)
+                                .clipShape(Circle())
+                                .shadow(color: Color.blue.opacity(0.4), radius: 6, x: 0, y: 4)
                         }
-
-                        Divider()
-                            .frame(height: 30)
-                            .background(Color.primary.opacity(0.2))
-
-                        // Add Existing Links Button
-                        Button(action: {
-                            showingAddLinksSheet = true
-                        }) {
-                            VStack(spacing: 4) {
-                                Image(systemName: "plus.square.on.square")
-                                    .font(.system(size: 20))
-                                Text("Existing")
-                                    .font(.caption2)
-                                    .fontWeight(.bold)
-                            }
-                            .foregroundColor(.primary)
-                            .frame(maxWidth: .infinity)
-                            .frame(height: 56)
-                            .background(Color(UIColor.tertiarySystemGroupedBackground))
-                            .clipShape(RoundedRectangle(cornerRadius: 16))
-                        }
+                        .padding(.leading, 24)
+                        .padding(.bottom, 24)
+                        Spacer()
                     }
-                    .padding(12)
-                    .background(Color(UIColor.systemGroupedBackground).opacity(0.95))
-                    .cornerRadius(24)
-                    .padding(.horizontal)
-                    .padding(.bottom, 8)
                 }
-                .transition(.move(edge: .bottom).combined(with: .opacity))
+                .transition(.scale.combined(with: .opacity))
                 .zIndex(2)
             }
         }
         .navigationTitle(group.name ?? "Group")
+        .navigationBarTitleDisplayMode(.large)
         .searchable(text: $searchText)
         .toolbar {
             ToolbarItem(placement: .navigationBarTrailing) {

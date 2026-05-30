@@ -27,7 +27,7 @@ struct LinkCardView: View {
         .padding(.vertical, 10)
         .contentShape(Rectangle())
         .onTapGesture { onTap?() }
-        .contextMenu { contextMenuItems }
+        .contextMenu(menuItems: { contextMenuItems }, preview: { contextMenuPreview })
         .swipeActions(edge: .trailing, allowsFullSwipe: false) {
             if !isSelectionMode { trailingSwipeActions }
         }
@@ -155,6 +155,58 @@ struct LinkCardView: View {
 
         Button(role: .destructive) { onDelete() } label: {
             Label("Delete", systemImage: "trash")
+        }
+    }
+
+    // MARK: - Context Menu Preview
+
+    private var contextMenuPreview: some View {
+        VStack(alignment: .leading, spacing: 0) {
+            // Square thumbnail
+            Group {
+                if let thumbUrl = content.thumbIconUrl, let url = URL(string: thumbUrl) {
+                    KFImage(url)
+                        .resizable()
+                        .placeholder {
+                            previewPlaceholder
+                        }
+                        .fade(duration: 0.2)
+                        .aspectRatio(contentMode: .fill)
+                } else {
+                    previewPlaceholder
+                }
+            }
+            .frame(width: 260, height: 160)
+            .clipped()
+
+            // Title + subtitle
+            VStack(alignment: .leading, spacing: 5) {
+                Text(content.title ?? "Unknown Title")
+                    .font(.system(.subheadline, weight: .semibold))
+                    .foregroundStyle(.primary)
+                    .lineLimit(2)
+
+                if let url = content.savedLinkUrl {
+                    Text(url)
+                        .font(.caption)
+                        .foregroundStyle(.secondary)
+                        .lineLimit(1)
+                }
+            }
+            .padding(.horizontal, 12)
+            .padding(.vertical, 10)
+        }
+        .frame(width: 260)
+        .background(Color(UIColor.secondarySystemGroupedBackground))
+        .clipShape(RoundedRectangle(cornerRadius: 16, style: .continuous))
+    }
+
+    private var previewPlaceholder: some View {
+        ZStack {
+            Color.blue.opacity(0.12)
+            Text(String(content.title?.prefix(1) ?? "#").uppercased())
+                .font(.system(size: 48, weight: .bold))
+                .foregroundStyle(.blue.opacity(0.6))
         }
     }
 
