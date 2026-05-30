@@ -9,165 +9,179 @@ struct LinkCardView: View {
     var onAddToGroup: () -> Void
     var onDelete: () -> Void
     var onShare: () -> Void
-    var onTap: (() -> Void)? = nil  // Added onTap closure
+    var onTap: (() -> Void)? = nil
+    var onEnterSelectionMode: (() -> Void)? = nil
     var isSelectionMode: Bool
     var isSelected: Bool
-    var deleteIconName: String = "trash"
     var showAddToGroupButton: Bool = true
 
     var body: some View {
-        VStack(spacing: 0) {
-            // Top Content Wrapper
-            Button(action: { onTap?() }) {
-                HStack(alignment: .top, spacing: 14) {
-                    // Selection Circle
-                    if isSelectionMode {
-                        Image(systemName: isSelected ? "checkmark.circle.fill" : "circle")
-                            .foregroundColor(isSelected ? .blue : .gray)
-                            .font(.title2)
-                            .transition(.scale)
-                            .padding(.top, 10)
-                    }
+        HStack(alignment: .center, spacing: 14) {
+            thumbnailView
 
-                    // Thumbnail
-                    Group {
-                        if let thumbUrl = content.thumbIconUrl, let url = URL(string: thumbUrl) {
-                            KFImage(url)
-                                .resizable()
-                                .placeholder {
-                                    ZStack {
-                                        Color(UIColor.secondarySystemBackground)
-                                        initialPlaceholder
-                                    }
-                                }
-                                .fade(duration: 0.25)
-                                .aspectRatio(contentMode: .fill)
-                        } else {
-                            initialPlaceholder
-                        }
-                    }
-                    .frame(width: 60, height: 60)
-                    .clipShape(RoundedRectangle(cornerRadius: 12, style: .continuous))
-                    .overlay(
-                        RoundedRectangle(cornerRadius: 12, style: .continuous)
-                            .stroke(Color.primary.opacity(0.05), lineWidth: 1)
-                    )
+            contentView
 
-                    // Text Content
-                    VStack(alignment: .leading, spacing: 6) {
-                        HStack(alignment: .top) {
-                            Text(content.title ?? "Unknown Title")
-                                .font(.system(.headline, design: .rounded))
-                                .fontWeight(.semibold)
-                                .foregroundColor(.primary)
-                                .lineLimit(2)
-                                .fixedSize(horizontal: false, vertical: true)
-
-                            Spacer()
-
-                            if let date = content.creationDate {
-                                Text(date.formatted(date: .numeric, time: .omitted))
-                                    .font(.caption2)
-                                    .foregroundColor(Color(uiColor: .tertiaryLabel))
-                            }
-                        }
-
-                        if let url = content.savedLinkUrl {
-                            Text(url)
-                                .font(.caption)
-                                .foregroundColor(.secondary)
-                                .lineLimit(1)
-                        }
-
-                        if let category = content.category?.name {
-                            Text(category.uppercased())
-                                .font(.system(size: 10, weight: .bold))
-                                .padding(.horizontal, 8)
-                                .padding(.vertical, 4)
-                                .background(Color.blue.opacity(0.1))
-                                .foregroundColor(.blue)
-                                .clipShape(Capsule())
-                        }
-                    }
-                }
-                .padding(16)  // Padding for the top section
-                .contentShape(Rectangle())  // Ensure the whole area is tappable
-            }
-            .buttonStyle(PlainButtonStyle())
-
-            if !isSelectionMode {
-                Divider()
-
-                // Smart Action Bar (Clean)
-                HStack(spacing: 0) {
-                    // Favorite Button
-                    Button(action: onToggleFavorite) {
-                        Image(systemName: content.isFavorite ? "heart.fill" : "heart")
-                            .font(.system(size: 20, weight: .medium))
-                            .foregroundColor(content.isFavorite ? .red : .secondary)
-                            .padding(.horizontal, 20)
-                            .padding(.vertical, 12)
-                            .contentShape(Rectangle())
-                    }
-                    .buttonStyle(PlainButtonStyle())
-
-                    Spacer()
-
-                    // Share Button
-                    Button(action: onShare) {
-                        Image(systemName: "square.and.arrow.up")
-                            .font(.system(size: 19, weight: .medium))
-                            .foregroundColor(.blue)
-                            .padding(.horizontal, 20)
-                            .padding(.vertical, 12)
-                            .contentShape(Rectangle())
-                    }
-                    .buttonStyle(PlainButtonStyle())
-
-                    Spacer()
-
-                    // Add to Group Button
-                    if showAddToGroupButton {
-                        Button(action: onAddToGroup) {
-                            Image(systemName: "folder.badge.plus")
-                                .font(.system(size: 19, weight: .medium))
-                                .foregroundColor(.blue)
-                                .padding(.horizontal, 20)
-                                .padding(.vertical, 12)
-                                .contentShape(Rectangle())
-                        }
-                        .buttonStyle(PlainButtonStyle())
-
-                        Spacer()
-                    }
-
-                    // Delete Button
-                    Button(action: onDelete) {
-                        Image(systemName: deleteIconName)
-                            .font(.system(size: 19, weight: .medium))
-                            .foregroundColor(.gray)
-                            .padding(.horizontal, 20)
-                            .padding(.vertical, 12)
-                            .contentShape(Rectangle())
-                    }
-                    .buttonStyle(PlainButtonStyle())
-                }
-                .padding(.horizontal, 4)
-                .background(Color.clear)
-            }
+            Spacer(minLength: 0)
         }
-        .background(Color(uiColor: .secondarySystemGroupedBackground))
-        .clipShape(RoundedRectangle(cornerRadius: 16, style: .continuous))
-        .shadow(color: Color.black.opacity(0.08), radius: 5, x: 0, y: 2)
+        .padding(.horizontal, 16)
+        .padding(.vertical, 10)
+        .contentShape(Rectangle())
+        .onTapGesture { onTap?() }
+        .contextMenu { contextMenuItems }
+        .swipeActions(edge: .trailing, allowsFullSwipe: false) {
+            if !isSelectionMode { trailingSwipeActions }
+        }
+        .swipeActions(edge: .leading, allowsFullSwipe: true) {
+            if !isSelectionMode { leadingSwipeAction }
+        }
     }
 
-    private var initialPlaceholder: some View {
-        ZStack {
-            Color.gray.opacity(0.1)
-            Text(String(content.title?.prefix(1) ?? "#"))
-                .font(.title)
-                .fontWeight(.bold)
-                .foregroundColor(.primary)
+    // MARK: - Thumbnail
+
+    @ViewBuilder
+    private var thumbnailView: some View {
+        ZStack(alignment: .bottomTrailing) {
+            Group {
+                if let thumbUrl = content.thumbIconUrl, let url = URL(string: thumbUrl) {
+                    KFImage(url)
+                        .resizable()
+                        .placeholder { circlePlaceholder }
+                        .fade(duration: 0.2)
+                        .aspectRatio(contentMode: .fill)
+                } else {
+                    circlePlaceholder
+                }
+            }
+            .frame(width: 52, height: 52)
+            .clipShape(Circle())
+
+            if isSelectionMode {
+                Image(systemName: isSelected ? "checkmark.circle.fill" : "circle")
+                    .font(.system(size: 18, weight: .semibold))
+                    .foregroundStyle(isSelected ? .white : .secondary)
+                    .background(
+                        Circle()
+                            .fill(isSelected ? Color.blue : Color(uiColor: .systemBackground))
+                            .frame(width: 20, height: 20)
+                    )
+                    .offset(x: 3, y: 3)
+                    .transition(.scale.combined(with: .opacity))
+            }
         }
+        .animation(.easeInOut(duration: 0.2), value: isSelectionMode)
+        .animation(.easeInOut(duration: 0.15), value: isSelected)
+    }
+
+    private var circlePlaceholder: some View {
+        ZStack {
+            Circle().fill(Color.blue.opacity(0.15))
+            Text(String(content.title?.prefix(1) ?? "#").uppercased())
+                .font(.system(size: 20, weight: .bold))
+                .foregroundStyle(.blue)
+        }
+    }
+
+    // MARK: - Content
+
+    private var contentView: some View {
+        VStack(alignment: .leading, spacing: 4) {
+            HStack(alignment: .top, spacing: 8) {
+                Text(content.title ?? "Unknown Title")
+                    .font(.system(.body, weight: .semibold))
+                    .foregroundStyle(.primary)
+                    .lineLimit(1)
+
+                Spacer()
+
+                if let date = content.creationDate {
+                    Text(date.formatted(date: .numeric, time: .omitted))
+                        .font(.caption2)
+                        .foregroundStyle(.tertiary)
+                        .fixedSize()
+                }
+            }
+
+            if let url = content.savedLinkUrl {
+                Text(url)
+                    .font(.caption)
+                    .foregroundStyle(.secondary)
+                    .lineLimit(1)
+            }
+
+            if let category = content.category?.name {
+                Text(category.uppercased())
+                    .font(.system(size: 10, weight: .bold))
+                    .padding(.horizontal, 7)
+                    .padding(.vertical, 3)
+                    .background(Color.blue.opacity(0.1))
+                    .foregroundStyle(.blue)
+                    .clipShape(Capsule())
+            }
+        }
+    }
+
+    // MARK: - Context Menu
+
+    @ViewBuilder
+    private var contextMenuItems: some View {
+        Button {
+            withAnimation(.easeInOut(duration: 0.2)) {
+                onEnterSelectionMode?()
+            }
+        } label: {
+            Label("Select", systemImage: "checkmark.circle")
+        }
+
+        Divider()
+
+        Button { onToggleFavorite() } label: {
+            Label(
+                content.isFavorite ? "Remove Favorite" : "Add to Favorites",
+                systemImage: content.isFavorite ? "heart.slash" : "heart"
+            )
+        }
+
+        Button { onShare() } label: {
+            Label("Share", systemImage: "square.and.arrow.up")
+        }
+
+        if showAddToGroupButton {
+            Button { onAddToGroup() } label: {
+                Label("Add to Group", systemImage: "folder.badge.plus")
+            }
+        }
+
+        Divider()
+
+        Button(role: .destructive) { onDelete() } label: {
+            Label("Delete", systemImage: "trash")
+        }
+    }
+
+    // MARK: - Swipe Actions
+
+    @ViewBuilder
+    private var trailingSwipeActions: some View {
+        Button(role: .destructive) { onDelete() } label: {
+            Label("Delete", systemImage: "trash")
+        }
+
+        if showAddToGroupButton {
+            Button { onAddToGroup() } label: {
+                Label("Group", systemImage: "folder.badge.plus")
+            }
+            .tint(.blue)
+        }
+    }
+
+    @ViewBuilder
+    private var leadingSwipeAction: some View {
+        Button { onToggleFavorite() } label: {
+            Label(
+                content.isFavorite ? "Unfavorite" : "Favorite",
+                systemImage: content.isFavorite ? "heart.slash.fill" : "heart.fill"
+            )
+        }
+        .tint(content.isFavorite ? .gray : .pink)
     }
 }

@@ -273,12 +273,37 @@ struct HomeContentView: View {
 
     @ViewBuilder
     private var headerView: some View {
-        VStack(spacing: 16) {
-            HStack(alignment: .center) {
+        HStack(alignment: .center) {
+            if isSelectionMode {
+                // WA-style: deselect-all button top-left
+                Button {
+                    withAnimation(.easeInOut(duration: 0.2)) {
+                        isSelectionMode = false
+                        selectedLinkIDs.removeAll()
+                    }
+                } label: {
+                    Image(systemName: "xmark.circle.fill")
+                        .font(.system(size: 26, weight: .semibold))
+                        .foregroundStyle(.secondary)
+                }
+
+                Spacer()
+
+                Text("\(selectedLinkIDs.count) selected")
+                    .font(.system(.title3, weight: .bold))
+                    .foregroundStyle(.primary)
+                    .animation(.none, value: selectedLinkIDs.count)
+
+                Spacer()
+
+                // Invisible spacer to balance layout
+                Image(systemName: "xmark.circle.fill")
+                    .font(.system(size: 26))
+                    .opacity(0)
+            } else {
                 VStack(alignment: .leading, spacing: 4) {
                     Text(showFavoritesOnly ? "Favorites" : "Link Manager")
-                        .font(.system(.largeTitle, design: .default))
-                        .fontWeight(.bold)
+                        .font(.system(.largeTitle, design: .default, weight: .bold))
                         .foregroundStyle(.primary)
 
                     Text(showFavoritesOnly ? "Your saved collection" : "Organize your digital life")
@@ -289,32 +314,25 @@ struct HomeContentView: View {
                 Spacer()
 
                 HStack(spacing: 12) {
-                    // Edit/Select Button
                     if !displayedContents.isEmpty {
-                        Button(action: {
+                        Button {
                             withAnimation(.easeInOut(duration: 0.2)) {
-                                isSelectionMode.toggle()
-                                if !isSelectionMode { selectedLinkIDs.removeAll() }
+                                isSelectionMode = true
                             }
-                        }) {
-                            Image(
-                                systemName: isSelectionMode ? "checkmark.circle.fill" : "checklist"
-                            )
-                            .font(.system(size: 16, weight: .semibold))
-                            .foregroundStyle(isSelectionMode ? .white : .primary)
-                            .frame(width: 36, height: 36)
-                            .background(
-                                isSelectionMode ? Color.blue : Color(UIColor.tertiarySystemFill)
-                            )
-                            .clipShape(Circle())
+                        } label: {
+                            Image(systemName: "checklist")
+                                .font(.system(size: 16, weight: .semibold))
+                                .foregroundStyle(.primary)
+                                .frame(width: 36, height: 36)
+                                .background(Color(UIColor.tertiarySystemFill))
+                                .clipShape(Circle())
                         }
                     }
-
-                    // Sort Button
                     sortMenu
                 }
             }
         }
+        .animation(.easeInOut(duration: 0.2), value: isSelectionMode)
     }
 
     @ViewBuilder
@@ -432,93 +450,86 @@ struct HomeContentView: View {
 
     @ViewBuilder
     private var contentListView: some View {
-        ScrollView {
-            if displayedContents.isEmpty {
-                VStack(spacing: 20) {
-                    Spacer()
-                        .frame(height: 60)
-
-                    ZStack {
-                        Circle()
-                            .fill(Color(UIColor.secondarySystemGroupedBackground))
-                            .frame(width: 100, height: 100)
-                            .shadow(color: Color.black.opacity(0.03), radius: 10, x: 0, y: 5)
-
-                        Image(systemName: "link")
-                            .font(.system(size: 40))
-                            .foregroundColor(.secondary.opacity(0.6))
-                    }
-                    .padding(.bottom, 10)
-
-                    VStack(spacing: 6) {
-                        Text(showFavoritesOnly ? "No Favorites Yet" : "No Links Found")
-                            .font(.title3)
-                            .fontWeight(.semibold)
-                            .foregroundColor(.primary)
-                        Text(
-                            showFavoritesOnly
-                                ? "Mark items as favorite to see them here."
-                                : "Your collection is empty.\nTap + to add a new link."
-                        )
-                        .font(.body)
-                        .foregroundColor(.secondary)
-                        .multilineTextAlignment(.center)
-                    }
-
-                    Spacer()
-                }
-                .frame(maxWidth: .infinity)
-                .listRowBackground(Color.clear)
-            } else {
-                LazyVStack(spacing: 12) {  // Tighter list spacing
-                    ForEach(displayedContents) { content in
-                        LinkCardView(
-                            content: content,
-                            onToggleFavorite: {
-                                viewModel.toggleFavorite(content)
-                            },
-                            onAddToGroup: {
+        if displayedContents.isEmpty {
+            emptyStateView
+        } else {
+            List {
+                ForEach(displayedContents) { content in
+                    LinkCardView(
+                        content: content,
+                        onToggleFavorite: { viewModel.toggleFavorite(content) },
+                        onAddToGroup: {
+                            if let id = content.id {
+                                selectedLinkIDs = [id]
+                                showingAddToGroupSheet = true
+                            }
+                        },
+                        onDelete: { activeAlert = .deleteSingle(content) },
+                        onShare: { shareLink(content) },
+                        onTap: {
+                            if isSelectionMode {
                                 if let id = content.id {
-                                    // Just add this single link, don't enter full selection mode
-                                    selectedLinkIDs = [id]
-                                    showingAddToGroupSheet = true
-                                }
-                            },
-                            onDelete: {
-                                activeAlert = .deleteSingle(content)
-                            },
-                            onShare: {
-                                shareLink(content)
-                            },
-                            onTap: {
-                                if isSelectionMode {
-                                    if let id = content.id {
-                                        if selectedLinkIDs.contains(id) {
-                                            selectedLinkIDs.remove(id)
-                                        } else {
-                                            selectedLinkIDs.insert(id)
-                                        }
+                                    if selectedLinkIDs.contains(id) {
+                                        selectedLinkIDs.remove(id)
+                                    } else {
+                                        selectedLinkIDs.insert(id)
                                     }
-                                } else {
-                                    selectedContent = content
                                 }
-                            },
-                            isSelectionMode: isSelectionMode,
-                            isSelected: content.id != nil && selectedLinkIDs.contains(content.id!)
-                        )
-                        .padding(.horizontal, 16)
-                    }
+                            } else {
+                                selectedContent = content
+                            }
+                        },
+                        onEnterSelectionMode: {
+                            withAnimation(.easeInOut(duration: 0.2)) {
+                                isSelectionMode = true
+                                if let id = content.id { selectedLinkIDs.insert(id) }
+                            }
+                        },
+                        isSelectionMode: isSelectionMode,
+                        isSelected: content.id.map { selectedLinkIDs.contains($0) } ?? false
+                    )
+                    .listRowBackground(Color.clear)
+                    .listRowInsets(EdgeInsets())
+                    .listRowSeparatorTint(Color.primary.opacity(0.08))
                 }
-                .padding(.bottom, isSelectionMode ? 100 : 20)
             }
+            .listStyle(.plain)
+            .animation(.none, value: displayedContents.count)
+            .refreshable { await viewModel.refresh() }
+            .sheet(isPresented: $showingAddToGroupSheet) { addToGroupSheet }
         }
-        .refreshable {
-            await viewModel.refresh()
-        }
+    }
 
-        .sheet(isPresented: $showingAddToGroupSheet) {
-            addToGroupSheet
+    private var emptyStateView: some View {
+        VStack(spacing: 20) {
+            Spacer()
+
+            ZStack {
+                Circle()
+                    .fill(Color(UIColor.secondarySystemGroupedBackground))
+                    .frame(width: 100, height: 100)
+                Image(systemName: "link")
+                    .font(.system(size: 40))
+                    .foregroundStyle(.secondary.opacity(0.6))
+            }
+
+            VStack(spacing: 6) {
+                Text(showFavoritesOnly ? "No Favorites Yet" : "No Links Found")
+                    .font(.title3)
+                    .fontWeight(.semibold)
+                Text(
+                    showFavoritesOnly
+                        ? "Mark items as favorite to see them here."
+                        : "Your collection is empty.\nTap + to add a new link."
+                )
+                .font(.body)
+                .foregroundStyle(.secondary)
+                .multilineTextAlignment(.center)
+            }
+
+            Spacer()
         }
+        .frame(maxWidth: .infinity)
     }
 
     @ViewBuilder
@@ -526,95 +537,82 @@ struct HomeContentView: View {
         if isSelectionMode {
             VStack {
                 Spacer()
-                HStack(spacing: 16) {
-                    // Delete Button
-                    Button(action: {
-                        let linksToDelete = displayedContents.filter { content in
-                            if let id = content.id { return selectedLinkIDs.contains(id) }
-                            return false
+                HStack(spacing: 12) {
+                    // Delete
+                    toolbarButton(
+                        icon: "trash.fill",
+                        label: "Delete",
+                        tint: .red,
+                        disabled: selectedLinkIDs.isEmpty
+                    ) {
+                        let toDelete = displayedContents.filter { content in
+                            content.id.map { selectedLinkIDs.contains($0) } ?? false
                         }
-                        if !linksToDelete.isEmpty {
-                            withAnimation {
-                                viewModel.deleteLinks(linksToDelete)
-                                isSelectionMode = false
-                                selectedLinkIDs.removeAll()
-                            }
-                        }
-                    }) {
-                        VStack(spacing: 4) {
-                            Image(systemName: "trash.fill")
-                                .font(.system(size: 20))
-                            Text("Delete")
-                                .font(.caption2)
-                                .fontWeight(.bold)
-                        }
-                        .foregroundColor(.white)
-                        .frame(maxWidth: .infinity)
-                        .frame(height: 56)
-                        .background(selectedLinkIDs.isEmpty ? Color.gray.opacity(0.3) : Color.red)
-                        .clipShape(RoundedRectangle(cornerRadius: 16))
-                    }
-                    .disabled(selectedLinkIDs.isEmpty)
-
-                    // Add to Group Button
-                    Button(action: {
-                        showingAddToGroupSheet = true
-                    }) {
-                        VStack(spacing: 4) {
-                            Image(systemName: "folder.badge.plus")
-                                .font(.system(size: 20))
-                            Text("Group")
-                                .font(.caption2)
-                                .fontWeight(.bold)
-                        }
-                        .foregroundColor(.white)
-                        .frame(maxWidth: .infinity)
-                        .frame(height: 56)
-                        .background(selectedLinkIDs.isEmpty ? Color.gray.opacity(0.3) : Color.blue)
-                        .clipShape(RoundedRectangle(cornerRadius: 16))
-                    }
-                    .disabled(selectedLinkIDs.isEmpty)
-
-                    // Select All Button
-                    Button(action: {
-                        let allIDs = Set(displayedContents.compactMap { $0.id })
-                        if selectedLinkIDs.count == allIDs.count {
-                            // Deselect All
+                        guard !toDelete.isEmpty else { return }
+                        withAnimation {
+                            viewModel.deleteLinks(toDelete)
+                            isSelectionMode = false
                             selectedLinkIDs.removeAll()
-                        } else {
-                            // Select All
-                            selectedLinkIDs = allIDs
                         }
-                    }) {
-                        VStack(spacing: 4) {
-                            Image(
-                                systemName: selectedLinkIDs.count == displayedContents.count
-                                    ? "checkmark.circle.fill" : "circle"
-                            )
-                            .font(.system(size: 20))
-                            Text(
-                                selectedLinkIDs.count == displayedContents.count
-                                    ? "None" : "All"
-                            )
-                            .font(.caption2)
-                            .fontWeight(.bold)
-                        }
-                        .foregroundColor(.primary)
-                        .frame(maxWidth: .infinity)
-                        .frame(height: 56)
-                        .background(Color(UIColor.tertiarySystemGroupedBackground))
-                        .clipShape(RoundedRectangle(cornerRadius: 16))
+                    }
+
+                    // Add to Group
+                    toolbarButton(
+                        icon: "folder.badge.plus",
+                        label: "Group",
+                        tint: .blue,
+                        disabled: selectedLinkIDs.isEmpty
+                    ) {
+                        showingAddToGroupSheet = true
+                    }
+
+                    // Select All / None
+                    let allSelected = selectedLinkIDs.count == displayedContents.count
+                    toolbarButton(
+                        icon: allSelected ? "checkmark.circle.fill" : "circle",
+                        label: allSelected ? "None" : "All",
+                        tint: .primary,
+                        disabled: false
+                    ) {
+                        let allIDs = Set(displayedContents.compactMap { $0.id })
+                        selectedLinkIDs = allSelected ? [] : allIDs
                     }
                 }
-                .padding()
-                .background(Color(UIColor.systemGroupedBackground).opacity(0.95))
-                .cornerRadius(24)
-                .padding(.horizontal)
-                .padding(.bottom, 8)
+                .padding(.horizontal, 16)
+                .padding(.vertical, 12)
+                .background(.ultraThinMaterial)
+                .clipShape(RoundedRectangle(cornerRadius: 24))
+                .shadow(color: .black.opacity(0.15), radius: 12, x: 0, y: -2)
+                .padding(.horizontal, 16)
+                .padding(.bottom, 12)
             }
             .transition(.move(edge: .bottom).combined(with: .opacity))
+            .animation(.spring(response: 0.35, dampingFraction: 0.8), value: isSelectionMode)
             .zIndex(2)
         }
+    }
+
+    @ViewBuilder
+    private func toolbarButton(
+        icon: String,
+        label: String,
+        tint: Color,
+        disabled: Bool,
+        action: @escaping () -> Void
+    ) -> some View {
+        Button(action: action) {
+            VStack(spacing: 4) {
+                Image(systemName: icon)
+                    .font(.system(size: 20, weight: .semibold))
+                Text(label)
+                    .font(.caption2)
+                    .fontWeight(.bold)
+            }
+            .foregroundStyle(disabled ? .tertiary : tint)
+            .frame(maxWidth: .infinity)
+            .frame(height: 52)
+        }
+        .disabled(disabled)
     }
 
     @ViewBuilder
