@@ -343,6 +343,7 @@ struct GroupDetailView: View {
                 .listRowBackground(Color.clear)
                 .listRowInsets(EdgeInsets())
                 .listRowSeparatorTint(Color.primary.opacity(0.08))
+                .alignmentGuide(.listRowSeparatorLeading) { _ in 82 }
             }
         }
         .listStyle(.plain)
