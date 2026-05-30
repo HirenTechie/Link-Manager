@@ -137,6 +137,46 @@ struct GroupDetailView: View {
                             .foregroundStyle(.primary)
                     }
                 }
+
+                ToolbarItem(placement: .bottomBar) {
+                    let allSelected = !links.isEmpty && selectedLinkIds.count == links.count
+                    HStack(spacing: 12) {
+                        Button { deleteSelectedLinks() } label: {
+                            Text("Delete")
+                                .font(.system(size: 15, weight: .semibold))
+                                .foregroundStyle(selectedLinkIds.isEmpty ? Color.secondary : .red)
+                                .frame(maxWidth: .infinity)
+                                .padding(.vertical, 10)
+                                .background(Color(UIColor.tertiarySystemFill))
+                                .clipShape(Capsule())
+                        }
+                        .disabled(selectedLinkIds.isEmpty)
+
+                        Button { showingAddToOtherGroupSheet = true } label: {
+                            Text("Move")
+                                .font(.system(size: 15, weight: .semibold))
+                                .foregroundStyle(selectedLinkIds.isEmpty ? Color.secondary : .blue)
+                                .frame(maxWidth: .infinity)
+                                .padding(.vertical, 10)
+                                .background(Color(UIColor.tertiarySystemFill))
+                                .clipShape(Capsule())
+                        }
+                        .disabled(selectedLinkIds.isEmpty)
+
+                        Button {
+                            let allIDs = Set(links.map { $0.objectID })
+                            withAnimation { selectedLinkIds = allSelected ? [] : allIDs }
+                        } label: {
+                            Text(allSelected ? "None" : "All")
+                                .font(.system(size: 15, weight: .semibold))
+                                .foregroundStyle(allSelected ? Color.blue : Color.primary)
+                                .frame(maxWidth: .infinity)
+                                .padding(.vertical, 10)
+                                .background(Color(UIColor.tertiarySystemFill))
+                                .clipShape(Capsule())
+                        }
+                    }
+                }
             } else {
                 ToolbarItem(placement: .navigationBarTrailing) {
                     HStack(spacing: 12) {
@@ -208,11 +248,6 @@ struct GroupDetailView: View {
 
         .toolbar(isSelectionMode ? .hidden : .visible, for: .tabBar)
         .navigationBarBackButtonHidden(isSelectionMode)
-        .safeAreaInset(edge: .bottom) {
-            if isSelectionMode {
-                selectionActionBar
-            }
-        }
         .sheet(isPresented: $showingAddLinksSheet) {
             AddLinksToGroupSheet(
                 group: group, linkViewModel: linkViewModel, groupViewModel: groupViewModel)
@@ -426,50 +461,6 @@ struct GroupDetailView: View {
                 .foregroundColor(.secondary)
 
         }
-    }
-
-    var selectionActionBar: some View {
-        let allSelected = !links.isEmpty && selectedLinkIds.count == links.count
-        return HStack(spacing: 12) {
-            Button { deleteSelectedLinks() } label: {
-                Text("Delete")
-                    .font(.system(size: 15, weight: .semibold))
-                    .foregroundStyle(selectedLinkIds.isEmpty ? Color.secondary : .red)
-                    .frame(maxWidth: .infinity)
-                    .padding(.vertical, 10)
-                    .background(Color(UIColor.tertiarySystemFill))
-                    .clipShape(Capsule())
-            }
-            .disabled(selectedLinkIds.isEmpty)
-
-            Button { showingAddToOtherGroupSheet = true } label: {
-                Text("Move")
-                    .font(.system(size: 15, weight: .semibold))
-                    .foregroundStyle(selectedLinkIds.isEmpty ? Color.secondary : .blue)
-                    .frame(maxWidth: .infinity)
-                    .padding(.vertical, 10)
-                    .background(Color(UIColor.tertiarySystemFill))
-                    .clipShape(Capsule())
-            }
-            .disabled(selectedLinkIds.isEmpty)
-
-            Button {
-                let allIDs = Set(links.map { $0.objectID })
-                withAnimation { selectedLinkIds = allSelected ? [] : allIDs }
-            } label: {
-                Text(allSelected ? "None" : "All")
-                    .font(.system(size: 15, weight: .semibold))
-                    .foregroundStyle(allSelected ? Color.blue : Color.primary)
-                    .frame(maxWidth: .infinity)
-                    .padding(.vertical, 10)
-                    .background(Color(UIColor.tertiarySystemFill))
-                    .clipShape(Capsule())
-            }
-        }
-        .padding(.horizontal, 16)
-        .padding(.vertical, 0)
-        .padding(.bottom, 0)
-        .transition(.move(edge: .bottom).combined(with: .opacity))
     }
 
     func deleteSelectedLinks() {
